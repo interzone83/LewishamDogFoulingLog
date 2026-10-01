@@ -3,127 +3,390 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lewisham Dog Fouling Evidence Log — Version 2</title>
+<title>Lewisham Dog Fouling Evidence Log</title>
 <style>
 :root{--g:#176b48;--bg:#f4f6f5;--line:#dbe2de;--muted:#65736d;--warn:#8a6811;--danger:#9f2f2f}
-*{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:#1d2925}
-header{background:#143d2e;color:#fff;padding:24px 18px}.wrap{max-width:1100px;margin:auto}
-h1{margin:0 0 7px;font-size:1.7rem}.sub{opacity:.92;line-height:1.45;max-width:850px}
-main{padding:18px}.modebar,.stats,.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.modebar{position:sticky;top:0;z-index:8;background:var(--bg);padding:8px 0}
-button,input,select,textarea{font:inherit}.btn{border:1px solid #b9c7c0;border-radius:9px;background:#fff;padding:9px 12px;cursor:pointer}.btn.primary{background:var(--g);color:#fff;border-color:var(--g)}.btn.danger{color:#fff;background:var(--danger);border-color:var(--danger)}.btn.small{padding:6px 9px;font-size:.88rem}.btn.active{outline:2px solid #8cb9a3}
-.stats{display:grid;grid-template-columns:repeat(3,1fr)}.stat,.card,.pending,.panel{background:#fff;border:1px solid var(--line);border-radius:13px}.stat{padding:13px}.stat b{display:block;font-size:1.55rem}
-.tools{display:grid;grid-template-columns:1fr 220px}.tools input,.tools select,.editgrid input,.editgrid textarea,.editgrid select,.reviewform input,.reviewform textarea,.reviewform select{width:100%;padding:9px;border:1px solid #bcc8c1;border-radius:8px;background:#fff}
-#log{display:grid;gap:14px}.card{overflow:hidden}.head{display:flex;justify-content:space-between;gap:12px;padding:15px 15px 7px}.date{font-weight:800;color:var(--g)}h2{font-size:1.08rem;margin:3px 0}.badge{font-size:.76rem;background:#e8f3ed;color:var(--g);padding:6px 9px;border-radius:999px;height:max-content}.meta{padding:0 15px 13px;color:var(--muted);line-height:1.5}.meta b{color:#1d2925}.uid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8rem;color:#7c8a84}
-.photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:#ddd}.photo{position:relative}.photos img{width:100%;height:250px;object-fit:cover;display:block;cursor:zoom-in}.photoctrl{position:absolute;top:6px;right:6px;display:flex;gap:5px}.photoctrl button{box-shadow:0 1px 4px #0004}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:#1d2925}
+header{background:#143d2e;color:#fff;padding:28px 18px}.wrap{max-width:1100px;margin:auto}h1{margin:0 0 8px}.sub{max-width:850px;line-height:1.5;opacity:.92}
+main{padding:18px}.modebar,.savebar,.tools{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.modebar{position:sticky;top:0;z-index:9;background:var(--bg);padding:8px 0}
+.btn,button,input,select,textarea{font:inherit}.btn{border:1px solid #b9c7c0;border-radius:9px;background:#fff;padding:9px 12px;cursor:pointer;text-decoration:none;color:inherit}.btn.primary{background:var(--g);color:#fff;border-color:var(--g)}.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}.btn.small{padding:6px 9px;font-size:.88rem}.btn.active{outline:2px solid #8cb9a3}.btn:disabled{opacity:.5;cursor:not-allowed}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.stat,.card,.pending{background:#fff;border:1px solid var(--line);border-radius:13px}.stat{padding:14px}.stat b{display:block;font-size:1.55rem}
+.tools{display:grid;grid-template-columns:1fr 220px}.tools input,.tools select,.editgrid input,.editgrid textarea,.editgrid select,.reviewgrid input,.reviewgrid textarea,.reviewgrid select{width:100%;padding:9px;border:1px solid #bcc8c1;border-radius:8px;background:#fff}
+#log{display:grid;gap:14px}.card{overflow:hidden}.head{display:flex;justify-content:space-between;gap:12px;padding:15px 15px 7px}.date{font-weight:800;color:var(--g)}h2{font-size:1.08rem;margin:3px 0}.badge{font-size:.76rem;background:#e8f3ed;color:var(--g);padding:6px 9px;border-radius:999px;height:max-content}.meta{padding:0 15px 13px;color:var(--muted);line-height:1.5}.meta b{color:#1d2925}.uid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;color:#7c8a84;margin-top:4px}
+.photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:#ddd}.photo{position:relative}.photos img{width:100%;height:250px;object-fit:cover;display:block;cursor:zoom-in}.photoctrl{position:absolute;top:6px;right:6px}.photoctrl .btn{box-shadow:0 1px 5px #0005}
 .editbox,.reviewbox{display:none;padding:14px 15px;border-top:1px solid var(--line);background:#fbfcfb}.edit-mode .editbox{display:block}.review-mode .reviewbox{display:block}
-.editgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.editgrid .wide{grid-column:1/-1}.editactions,.reviewactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.drag{cursor:grab;user-select:none}.dragging{opacity:.45}.move{display:flex;gap:5px}
-.pendingwrap{display:none;margin:0 0 16px}.edit-mode .pendingwrap{display:block}.pending{padding:13px;border-color:#d6b75f;background:#fffdf5}.pending h3{margin:0 0 6px}.pending .photos{margin:10px -13px -13px}
+.editgrid,.reviewgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wide{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.dragging{opacity:.45}.draghandle{cursor:grab}
 .reviewhistory{margin-top:10px}.check{padding:8px 10px;border-left:3px solid var(--g);background:#f7faf8;margin:7px 0}.check .photos{margin-top:8px}
-.notice{padding:10px 12px;border-radius:9px;background:#fff6cf;color:#624c00;margin-bottom:12px}.savebar{display:none;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.edit-mode .savebar,.review-mode .savebar{display:flex}.status{color:var(--muted);font-size:.9rem}.status.saved{color:var(--g);font-weight:800}.status.error{color:var(--danger);font-weight:800}
-dialog{border:0;border-radius:14px;padding:0;max-width:min(92vw,760px);width:100%}dialog::backdrop{background:#0009}.dialogbody{padding:18px}.dialogbody h3{margin-top:0}.dialogactions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.repoimages{max-height:55vh;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.repoimg{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}.repoimg img{width:100%;height:110px;object-fit:cover}.repoimg button{width:100%;border:0;border-top:1px solid var(--line);padding:7px;background:#fff}
+.pendingwrap{display:none;margin:0 0 16px}.edit-mode .pendingwrap{display:block}.pending{padding:13px;border-color:#d6b75f;background:#fffdf5;margin-bottom:10px}.pending h3{margin:0 0 6px}.pending .photos{margin:10px -13px -13px}
+.savebar{display:none;align-items:center}.edit-mode .savebar,.review-mode .savebar{display:flex}.status{font-size:.9rem;color:var(--muted)}.status.saved{color:var(--g);font-weight:800}.status.error{color:var(--danger);font-weight:800}.notice{padding:10px 12px;border-radius:9px;background:#fff6cf;color:#624c00;margin-bottom:12px}
+dialog{border:0;border-radius:14px;padding:0;max-width:min(92vw,760px);width:100%}dialog::backdrop{background:#0009}.dialogbody{padding:18px}.dialogbody h3{margin-top:0}.dialogactions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.repoimages{max-height:58vh;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px}.repoimg{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}.repoimg img{width:100%;height:110px;object-fit:cover}.repoimg button{width:100%;border:0;border-top:1px solid var(--line);padding:7px;background:#fff;cursor:pointer;overflow:hidden;text-overflow:ellipsis}
 #viewer{background:transparent;max-width:none;width:auto}#viewer img{max-width:95vw;max-height:90vh}#viewer button{position:fixed;right:16px;top:16px;border:0;border-radius:50%;font-size:24px;width:42px;height:42px}
-footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}
-@media(max-width:650px){.stats,.tools,.editgrid{grid-template-columns:1fr}.editgrid .wide{grid-column:auto}.head{flex-direction:column}.photos img{height:220px}}
+footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty{padding:24px;text-align:center;color:var(--muted)}
+@media(max-width:650px){.stats,.tools,.editgrid,.reviewgrid{grid-template-columns:1fr}.wide{grid-column:auto}.head{flex-direction:column}.photos img{height:220px}}
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>Lewisham Dog Fouling Evidence Log <span id="versionBadge" style="font-size:.7em;opacity:.75">V2</span></h1><div class="sub">An ongoing photographic record of dog fouling and discarded bagged dog waste observed on local pedestrian routes. Follow-up checks document whether individual incidents remain, have been cleared, or have changed.</div></div></header>
+<header><div class="wrap"><h1>Lewisham Dog Fouling Evidence Log <span id="versionBadge" style="font-size:.65em;opacity:.65">V2</span></h1><div class="sub">An ongoing photographic record of dog fouling and discarded bagged dog waste observed on local pedestrian routes. Follow-up checks document whether individual incidents remain, have been cleared, or have changed.</div></div></header>
 <main class="wrap">
-<div class="modebar" hidden>
-<button class="btn active" data-mode="public">Public view</button>
-<button class="btn" data-mode="review">Incident review</button>
-<button class="btn" data-mode="edit">Edit log</button>
-<a class="btn" href="../">Open original V1</a>
+<div id="modebar" class="modebar">
+  <button class="btn active" data-mode="public">Public view</button>
+  <button class="btn" data-mode="review">Incident review</button>
+  <button class="btn" data-mode="edit">Edit log</button>
+  <a class="btn" href="../">Open original V1</a>
 </div>
-<div id="authNotice" class="notice" hidden>Review and edit changes write to GitHub. For safety, no password or GitHub token is stored in this page. When needed, enter your fine-grained GitHub token for this browser session only.</div>
-<div class="savebar"><button id="saveAll" class="btn primary">Save changes to GitHub</button><button id="connect" class="btn">Connect GitHub</button><span id="saveStatus" class="status">No unsaved changes</span></div>
-<section class="stats"><div class="stat"><b id="incidentCount"></b><span>logged incidents</span></div><div class="stat"><b id="photoCount"></b><span>evidence photographs</span></div><div class="stat"><b id="locationCount"></b><span>distinct locations/routes</span></div></section>
-<section class="tools"><input id="search" type="search" placeholder="Search location, notes, type or permanent ID…"><select id="typeFilter"><option value="">All incident types</option></select></section>
+<div id="authNotice" class="notice" hidden>Review and editing writes directly to the GitHub repository. Your GitHub token is kept only for this browser tab/session and is never saved into the site.</div>
+<div class="savebar">
+  <button id="saveAll" class="btn primary">Save changes to GitHub</button>
+  <span id="saveStatus" class="status">GitHub connected · no unsaved changes</span>
+</div>
+<section class="stats">
+  <div class="stat"><b id="incidentCount">0</b><span>logged incidents</span></div>
+  <div class="stat"><b id="photoCount">0</b><span>evidence photographs</span></div>
+  <div class="stat"><b id="locationCount">0</b><span>distinct locations/routes</span></div>
+</section>
+<section class="tools">
+  <input id="search" type="search" placeholder="Search location, notes, type or record ID…">
+  <select id="typeFilter"><option value="">All incident types</option></select>
+</section>
 <section id="pendingWrap" class="pendingwrap"><h3>Pending uploads</h3><div id="pendingList"></div></section>
 <section id="log"></section>
+<div id="empty" class="empty" hidden>No entries match.</div>
 </main>
 <footer>Observations and estimated ages are recorded as such and should not be read as independently verified facts.</footer>
 
-<dialog id="authDlg"><div class="dialogbody"><h3>Connect GitHub editing</h3><p>Enter the same fine-grained repository token used by the upload shortcut. It is held only in this browser tab/session and is not committed to the website.</p><input id="tokenInput" type="password" placeholder="GitHub token" style="width:100%;padding:10px"><div class="dialogactions"><button class="btn" data-close>Cancel</button><button id="authSave" class="btn primary">Connect</button></div></div></dialog>
+<dialog id="authDlg"><div class="dialogbody"><h3>Connect GitHub editing</h3><p>Enter the fine-grained repository token used by your upload shortcut. It is held in session storage for this browser tab/session only.</p><input id="tokenInput" type="password" autocomplete="off" placeholder="GitHub token" style="width:100%;padding:10px"><div class="dialogactions"><button class="btn" data-close>Cancel</button><button id="authSave" class="btn primary">Connect</button></div></div></dialog>
 <dialog id="repoDlg"><div class="dialogbody"><h3>Select an existing repository image</h3><div id="repoImages" class="repoimages"></div><div class="dialogactions"><button class="btn" data-close>Close</button></div></div></dialog>
-<dialog id="viewer"><button>×</button><img alt="Expanded evidence photograph"></dialog>
+<dialog id="viewer"><button aria-label="Close">×</button><img alt="Expanded evidence photograph"></dialog>
 <input id="fileInput" type="file" accept="image/*" multiple hidden>
+
 <script src="incidents.js"></script>
 <script>
-const REPO='interzone83/LewishamDogFoulingLog', DATA_PATH='v2/incidents.js';
-let data=(window.INCIDENTS||[]).map((x,i)=>({...x,uid:x.uid||('LEGACY-'+String(x.id||i+1).padStart(3,'0')),checks:(x.checks||[]).map(c=>({...c,images:c.images||[]}))}));
+const REPO='interzone83/LewishamDogFoulingLog';
+const DATA_PATH='v2/incidents.js';
+const ADMIN=new URLSearchParams(location.search).get('admin')==='1';
+const TYPES=['Unbagged fouling','Spread / smeared fouling','Residue after attempted clean-up','Bagged dog waste'];
 
-const ADMIN=new URLSearchParams(location.search).get('admin')==='1';let mode='public',dirty=false,token=sessionStorage.getItem('doglogGhToken')||'',repoTree=[],pending=[],activePhotoEntry=null,activeFollowupEntry=null,dragIndex=null,pendingMode=null,queuedDeletes=[];
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-const encPath=p=>p.split('/').map(encodeURIComponent).join('/'), imageURL=p=>p.startsWith('data:')?p:(p.startsWith('images/')?'../'+encPath(p):'../images/'+encPath(p));
-function markDirty(){dirty=true;$('#saveStatus').textContent='Unsaved changes';$('#saveStatus').className='status'}function isComplete(i){return !!(i.firstSeen&&i.location&&i.type&&i.notes)}
-function localISODate(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}function displayDate(i){if(i.displayFirstSeen)return i.displayFirstSeen;if(!i.firstSeen)return'';const m=String(i.firstSeen).match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);if(!m)return i.firstSeen;const d=new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]);return d.toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
-function refreshStats(){const rows=mode==='edit'?data:data.filter(isComplete);$('#incidentCount').textContent=rows.length;$('#photoCount').textContent=rows.reduce((n,i)=>n+(i.images?.length||0)+(i.checks||[]).reduce((m,c)=>m+(c.images?.length||0),0),0);$('#locationCount').textContent=new Set(rows.map(i=>i.location).filter(Boolean)).size}
-const TYPES=['Unbagged fouling','Spread / smeared fouling','Residue after attempted clean-up','Bagged dog waste'];function typeOptions(v){const vals=TYPES.includes(v)||!v?TYPES:[v,...TYPES];return vals.map(x=>'<option value="'+esc(x)+'"'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('')}function entryNo(i){return data.indexOf(i)+1}
-function card(i){
- const no=entryNo(i),photos=i.images||[],checks=i.checks||[];
- return `<article class="card" draggable="${mode==='edit'}" data-uid="${esc(i.uid)}" data-index="${data.indexOf(i)}">
- <div class="head"><div><div class="date">${esc(displayDate(i))}</div><h2>${esc(i.location||'Location pending')}</h2><div class="uid">Record ID: ${esc(i.uid)}</div></div><div><span class="badge">${esc(i.type||'Pending type')}</span><div style="margin-top:7px;text-align:right">Entry #${String(no).padStart(2,'0')}</div></div></div>
- <div class="meta">${i.photoRecorded?`<p><b>Photo recorded:</b> ${esc(i.photoRecorded)}</p>`:''}<p><b>Observation:</b> ${esc(i.notes||'')}</p>${checks.length?`<div class="reviewhistory"><b>Follow-up history</b>${checks.map(c=>`<div class="check"><b>${esc(c.date||'')}</b> — ${esc(c.status||'')}${c.note?`: ${esc(c.note)}`:''}${(c.images||[]).length?`<div class="photos">${c.images.map(p=>`<img src="${imageURL(p)}" data-full="${imageURL(p)}" alt="Follow-up evidence">`).join('')}</div>`:''}</div>`).join('')}</div>`:''}</div>
- ${photos.length?`<div class="photos">${photos.map((p,pi)=>`<div class="photo"><img loading="lazy" src="${imageURL(p)}" data-full="${imageURL(p)}" alt="Evidence photo for entry ${no}">${mode==='edit'?`<div class="photoctrl"><button class="btn small danger" data-remove-photo="${pi}">×</button></div>`:''}</div>`).join('')}</div>`:''}
- <div class="reviewbox"><div class="reviewform"><div class="editgrid"><div><label>Review date<input type="date" data-rdate value="${localISODate()}"></label></div><div><label>Status<select data-rstatus><option>Still present</option><option>Cleared</option><option>Residue remains</option><option>New fouling at same spot</option><option>Unable to confirm</option></select></label></div><div class="wide"><label>Follow-up note<textarea data-rnote rows="2"></textarea></label></div></div><div class="reviewactions"><button class="btn" data-follow-photo>Add follow-up photo</button><button class="btn primary" data-add-review>Add review</button></div></div></div>
- <div class="editbox"><div class="editgrid">
- <div><label>Date/time<input type="datetime-local" data-field="firstSeen" value="${toInputDate(i.firstSeen)}"></label></div>
- <div><label>Type<select data-field="type"><option value="">Select type…</option>${typeOptions(i.type||'')}</select></label></div>
- <div class="wide"><label>Location<input data-field="location" value="${esc(i.location||'')}"></label></div>
- <div class="wide"><label>Observation<textarea data-field="notes" rows="3">${esc(i.notes||'')}</textarea></label></div>
- </div><div class="editactions"><button class="btn" data-add-existing>Add existing photo</button><button class="btn" data-upload-photo>Upload new photo</button><button class="btn danger" data-delete>Delete post</button><span class="move"><button class="btn small" data-up>↑</button><button class="btn small" data-down>↓</button><span class="btn small drag">Drag</span></span></div></div>
- </article>`;
+let data=(window.INCIDENTS||[]).map((x,i)=>({
+  ...x,
+  uid:x.uid||('LEGACY-'+String(x.id||i+1).padStart(3,'0')),
+  images:x.images||[],
+  checks:(x.checks||[]).map(c=>({...c,images:c.images||[]}))
+}));
+let mode='public';
+let dirty=false;
+let token=sessionStorage.getItem('doglogGhToken')||'';
+let repoTree=[];
+let pending=[];
+let pendingMode=null;
+let activePhotoEntry=null;
+let activeFollowupUid=null;
+let reviewDrafts={};
+let queuedDeletes=[];
+let dragIndex=null;
+
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const encPath=p=>p.split('/').map(encodeURIComponent).join('/');
+const imageURL=p=>p.startsWith('data:')?p:(p.startsWith('images/')?'../'+encPath(p):'../images/'+encPath(p));
+const localISODate=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
+
+function markDirty(msg='Unsaved changes'){
+  dirty=true;
+  const s=$('#saveStatus'); if(s){s.textContent=msg;s.className='status'}
 }
-function toInputDate(s){if(!s)return'';const m=String(s).match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);return m?`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}`:''}
-function fromInputDate(v){return v?v.replace('T',' '):''}
+function isComplete(i){return !!(i.firstSeen&&i.location&&i.type&&i.notes)}
+function entryNo(i){return data.indexOf(i)+1}
+function displayDate(i){
+  if(i.displayFirstSeen)return i.displayFirstSeen;
+  const m=String(i.firstSeen||'').match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  if(!m)return i.firstSeen||'';
+  const d=new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]);
+  return d.toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function toInputDate(s){
+  const m=String(s||'').match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  return m?`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}`:'';
+}
+function typeOptions(v){
+  const vals=(v&&!TYPES.includes(v))?[v,...TYPES]:TYPES;
+  return '<option value="">Select type…</option>'+vals.map(x=>'<option value="'+esc(x)+'"'+(x===v?' selected':'')+'>'+esc(x)+'</option>').join('');
+}
+function reviewDraft(uid){
+  if(!reviewDrafts[uid])reviewDrafts[uid]={date:localISODate(),status:'Still present',note:'',images:[]};
+  return reviewDrafts[uid];
+}
+function refreshStats(){
+  const rows=mode==='edit'?data:data.filter(isComplete);
+  $('#incidentCount').textContent=rows.length;
+  $('#photoCount').textContent=rows.reduce((n,i)=>n+(i.images?.length||0)+(i.checks||[]).reduce((m,c)=>m+(c.images?.length||0),0),0);
+  $('#locationCount').textContent=new Set(rows.map(i=>i.location).filter(Boolean)).size;
+}
+function followupHtml(check){
+  return `<div class="check"><b>${esc(check.date||'')}</b> — ${esc(check.status||'')}${check.note?': '+esc(check.note):''}${(check.images||[]).length?`<div class="photos">${check.images.map(p=>`<img loading="lazy" src="${imageURL(p)}" data-full="${imageURL(p)}" alt="Follow-up evidence photograph">`).join('')}</div>`:''}</div>`;
+}
+function card(i){
+  const no=entryNo(i),d=reviewDraft(i.uid);
+  return `<article class="card" data-index="${data.indexOf(i)}" draggable="${mode==='edit'}">
+    <div class="head">
+      <div><div class="date">${esc(displayDate(i))}</div><h2>${esc(i.location||'Location pending')}</h2><div class="uid">Record ID: ${esc(i.uid)}</div></div>
+      <div><span class="badge">${esc(i.type||'Pending type')}</span><div style="margin-top:7px;text-align:right">Entry #${String(no).padStart(2,'0')}</div></div>
+    </div>
+    <div class="meta">
+      ${i.photoRecorded?`<p><b>Photo recorded:</b> ${esc(i.photoRecorded)}</p>`:''}
+      <p><b>Observation:</b> ${esc(i.notes||'')}</p>
+      ${(i.checks||[]).length?`<div class="reviewhistory"><b>Follow-up history</b>${i.checks.map(followupHtml).join('')}</div>`:''}
+    </div>
+    ${(i.images||[]).length?`<div class="photos">${i.images.map((p,pi)=>`<div class="photo"><img loading="lazy" src="${imageURL(p)}" data-full="${imageURL(p)}" alt="Evidence photo for entry ${no}">${mode==='edit'?`<div class="photoctrl"><button class="btn small danger" data-remove-photo="${pi}" aria-label="Remove photo">×</button></div>`:''}</div>`).join('')}</div>`:''}
+    <div class="reviewbox">
+      <div class="reviewgrid">
+        <label>Review date<input type="date" data-rdate value="${esc(d.date)}"></label>
+        <label>Status<select data-rstatus><option${d.status==='Still present'?' selected':''}>Still present</option><option${d.status==='Cleared'?' selected':''}>Cleared</option><option${d.status==='Residue remains'?' selected':''}>Residue remains</option><option${d.status==='New fouling at same spot'?' selected':''}>New fouling at same spot</option><option${d.status==='Unable to confirm'?' selected':''}>Unable to confirm</option></select></label>
+        <label class="wide">Follow-up note<textarea rows="2" data-rnote>${esc(d.note)}</textarea></label>
+      </div>
+      ${d.images.length?`<div class="status" style="margin-top:8px">${d.images.length} new follow-up photo${d.images.length===1?'':'s'} attached</div>`:''}
+      <div class="actions"><button class="btn" data-follow-photo>Add follow-up photo</button><button class="btn primary" data-add-review>Add review to history</button></div>
+    </div>
+    <div class="editbox">
+      <div class="editgrid">
+        <label>Date/time<input type="datetime-local" data-field="firstSeen" value="${toInputDate(i.firstSeen)}"></label>
+        <label>Type<select data-field="type">${typeOptions(i.type||'')}</select></label>
+        <label class="wide">Location<input data-field="location" value="${esc(i.location||'')}"></label>
+        <label class="wide">Observation<textarea data-field="notes" rows="3">${esc(i.notes||'')}</textarea></label>
+      </div>
+      <div class="actions">
+        <button class="btn" data-existing-photo>Add existing photo</button>
+        <button class="btn" data-upload-photo>Upload new photo</button>
+        <button class="btn danger" data-delete-post>Delete post</button>
+        <button class="btn small" data-move-up>↑ Move</button>
+        <button class="btn small" data-move-down>↓ Move</button>
+        <span class="btn small draghandle">Drag to reorder</span>
+      </div>
+    </div>
+  </article>`;
+}
 function render(){
- document.body.classList.toggle('edit-mode',mode==='edit');document.body.classList.toggle('review-mode',mode==='review');
- $$('.modebar [data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
- $('#authNotice').hidden=mode==='public';$('#pendingWrap').style.display=mode==='edit'?'block':'none';
- const q=$('#search').value.trim().toLowerCase(),t=$('#typeFilter').value;
- const rows=data.filter(i=>(mode==='edit'||isComplete(i))&&(!t||i.type===t)&&(!q||[i.location,i.notes,i.type,i.firstSeen,i.uid].join(' ').toLowerCase().includes(q)));
- $('#log').innerHTML=(mode==='public'?[...rows].reverse():rows).map(card).join('');
- refreshStats();bindCards();if(mode==='edit')renderPending();
+  document.body.classList.toggle('review-mode',mode==='review');
+  document.body.classList.toggle('edit-mode',mode==='edit');
+  $$('.modebar [data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+  $('#authNotice').hidden=mode==='public';
+  const q=$('#search').value.trim().toLowerCase(),t=$('#typeFilter').value;
+  const rows=data.filter(i=>(mode==='edit'||isComplete(i))&&(!t||i.type===t)&&(!q||[i.location,i.notes,i.type,i.firstSeen,i.uid].join(' ').toLowerCase().includes(q)));
+  const shown=mode==='public'?[...rows].reverse():rows;
+  $('#log').innerHTML=shown.map(card).join('');
+  $('#empty').hidden=shown.length>0;
+  refreshStats();
+  bindCards();
+  if(mode==='edit')renderPending();
 }
 function bindCards(){
- $$('.card').forEach(el=>{
-  const idx=+el.dataset.index,i=data[idx];
-  el.querySelectorAll('[data-field]').forEach(inp=>inp.onchange=()=>{i[inp.dataset.field]=inp.dataset.field==='firstSeen'?fromInputDate(inp.value):inp.value;if(inp.dataset.field==='firstSeen')i.displayFirstSeen='';markDirty();render()});
-  el.querySelectorAll('[data-remove-photo]').forEach(b=>b.onclick=async()=>{const pi=+b.dataset.removePhoto,p=i.images[pi];if(!confirm('Remove this photo from the post?'))return;i.images.splice(pi,1);const refs=data.reduce((n,x)=>n+(x.images||[]).filter(v=>v===p).length+(x.checks||[]).reduce((m,ch)=>m+(ch.images||[]).filter(v=>v===p).length,0),0);if(refs===0&&!String(p).startsWith('data:')&&confirm('Also delete this image file from GitHub when you save?')){if(!repoTree.length)await loadTree();const full='images/'+p,item=repoTree.find(x=>x.path===full);if(item)queuedDeletes.push({path:full,sha:item.sha})}markDirty();render()});
-  const del=el.querySelector('[data-delete]');if(del)del.onclick=async()=>{if(!repoTree.length)await loadTree();const dedicated=repoTree.filter(x=>x.type==='blob'&&x.path.startsWith('images/'+i.uid+'/'));if(dedicated.length){if(!confirm('Delete this post AND its dedicated GitHub image folder? This takes effect when you press Save changes to GitHub.'))return;dedicated.forEach(x=>queuedDeletes.push({path:x.path,sha:x.sha}))}else if(!confirm('Delete this post from Version 2?'))return;data.splice(idx,1);markDirty();render()};
-  const up=el.querySelector('[data-up]');if(up)up.onclick=()=>move(idx,-1);const down=el.querySelector('[data-down]');if(down)down.onclick=()=>move(idx,1);
-  const ex=el.querySelector('[data-add-existing]');if(ex)ex.onclick=()=>{activePhotoEntry=i;openRepoPicker()};
-  const upl=el.querySelector('[data-upload-photo]');if(upl)upl.onclick=()=>{activePhotoEntry=i;activeFollowupEntry=null;$('#fileInput').click()};
-  const fp=el.querySelector('[data-follow-photo]');if(fp)fp.onclick=()=>{activePhotoEntry=i;activeFollowupEntry={uid:i.uid,paths:[]};$('#fileInput').click()};
-  const ar=el.querySelector('[data-add-review]');if(ar)ar.onclick=()=>{const paths=activeFollowupEntry?.uid===i.uid?activeFollowupEntry.paths:[];i.checks.push({date:el.querySelector('[data-rdate]').value,status:el.querySelector('[data-rstatus]').value,note:el.querySelector('[data-rnote]').value.trim(),images:paths});activeFollowupEntry=null;markDirty();render()};
-  el.ondragstart=e=>{dragIndex=idx;el.classList.add('dragging');e.dataTransfer.effectAllowed='move'};
-  el.ondragend=()=>el.classList.remove('dragging');
-  el.ondragover=e=>{if(mode==='edit')e.preventDefault()};
-  el.ondrop=e=>{e.preventDefault();if(dragIndex===null||dragIndex===idx)return;const [x]=data.splice(dragIndex,1);data.splice(idx,0,x);dragIndex=null;markDirty();render()};
- });
- $$('.photos img').forEach(img=>img.onclick=()=>{$('#viewer img').src=img.dataset.full;$('#viewer').showModal()});
+  $$('.card').forEach(el=>{
+    const idx=+el.dataset.index,i=data[idx];
+    el.querySelectorAll('[data-field]').forEach(inp=>inp.onchange=()=>{
+      const field=inp.dataset.field;
+      i[field]=field==='firstSeen'?inp.value.replace('T',' '):inp.value;
+      if(field==='firstSeen')i.displayFirstSeen='';
+      markDirty();render();
+    });
+    el.querySelector('[data-rdate]')?.addEventListener('change',e=>reviewDraft(i.uid).date=e.target.value);
+    el.querySelector('[data-rstatus]')?.addEventListener('change',e=>reviewDraft(i.uid).status=e.target.value);
+    el.querySelector('[data-rnote]')?.addEventListener('input',e=>reviewDraft(i.uid).note=e.target.value);
+    el.querySelector('[data-follow-photo]')?.addEventListener('click',()=>{
+      activePhotoEntry=i;activeFollowupUid=i.uid;$('#fileInput').click();
+    });
+    el.querySelector('[data-add-review]')?.addEventListener('click',()=>{
+      const d=reviewDraft(i.uid);
+      i.checks.push({date:d.date,status:d.status,note:d.note.trim(),images:[...d.images]});
+      delete reviewDrafts[i.uid]; activeFollowupUid=null; markDirty('Review added · unsaved'); render();
+    });
+    el.querySelectorAll('[data-remove-photo]').forEach(b=>b.onclick=async()=>{
+      const pi=+b.dataset.removePhoto,p=i.images[pi];
+      if(!confirm('Remove this photo from the post?'))return;
+      i.images.splice(pi,1);
+      const refs=data.reduce((n,x)=>n+(x.images||[]).filter(v=>v===p).length+(x.checks||[]).reduce((m,ch)=>m+(ch.images||[]).filter(v=>v===p).length,0),0);
+      if(refs===0&&!String(p).startsWith('data:')&&confirm('Also delete this image file from GitHub when you save?')){
+        await ensureTree();
+        const item=repoTree.find(x=>x.path==='images/'+p); if(item)queueDelete(item);
+      }
+      markDirty();render();
+    });
+    el.querySelector('[data-existing-photo]')?.addEventListener('click',()=>{activePhotoEntry=i;activeFollowupUid=null;openRepoPicker()});
+    el.querySelector('[data-upload-photo]')?.addEventListener('click',()=>{activePhotoEntry=i;activeFollowupUid=null;$('#fileInput').click()});
+    el.querySelector('[data-delete-post]')?.addEventListener('click',async()=>{
+      await ensureTree();
+      const dedicated=repoTree.filter(x=>x.type==='blob'&&x.path.startsWith('images/'+i.uid+'/'));
+      const msg=dedicated.length?'Delete this post and its dedicated GitHub image folder when you save?':'Delete this post from Version 2?';
+      if(!confirm(msg))return;
+      dedicated.forEach(queueDelete);
+      data.splice(idx,1);delete reviewDrafts[i.uid];markDirty();render();
+    });
+    el.querySelector('[data-move-up]')?.addEventListener('click',()=>move(idx,-1));
+    el.querySelector('[data-move-down]')?.addEventListener('click',()=>move(idx,1));
+    el.ondragstart=e=>{if(mode!=='edit')return;e.dataTransfer.effectAllowed='move';dragIndex=idx;el.classList.add('dragging')};
+    el.ondragend=()=>el.classList.remove('dragging');
+    el.ondragover=e=>{if(mode==='edit')e.preventDefault()};
+    el.ondrop=e=>{if(mode!=='edit')return;e.preventDefault();if(dragIndex===null||dragIndex===idx)return;const [x]=data.splice(dragIndex,1);data.splice(idx,0,x);dragIndex=null;markDirty();render()};
+  });
+  $$('.photos img').forEach(img=>img.onclick=()=>{$('#viewer img').src=img.dataset.full;$('#viewer').showModal()});
 }
-function move(idx,d){const n=idx+d;if(n<0||n>=data.length)return;[data[idx],data[n]]=[data[n],data[idx]];markDirty();render()}
-async function gh(path,opts={}){if(!token)throw new Error('GitHub not connected');const r=await fetch('https://api.github.com/repos/'+REPO+path,{...opts,headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28',...(opts.headers||{})}});if(!r.ok)throw new Error((await r.text())||('GitHub '+r.status));return r.status===204?null:r.json()}
-async function connect(){if(token){try{await gh('');$('#saveStatus').textContent='GitHub connected';return true}catch(e){token='';sessionStorage.removeItem('doglogGhToken')}}$('#authDlg').showModal();return false}
-$('#authSave').onclick=async()=>{token=$('#tokenInput').value.trim();sessionStorage.setItem('doglogGhToken',token);try{await gh('');$('#authDlg').close();$('#saveStatus').textContent='GitHub connected';if(pendingMode){mode=pendingMode;pendingMode=null;if(mode==='edit')await loadPending();render()}}catch(e){alert('Could not connect: '+e.message);token='';sessionStorage.removeItem('doglogGhToken')}};
-$('#connect').onclick=connect;$$('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
-async function saveAll(){if(activeFollowupEntry&&activeFollowupEntry.paths&&activeFollowupEntry.paths.length){alert('Finish this follow-up by pressing Add review before saving.');return}if(!token){pendingMode=mode;$('#authDlg').showModal();return}try{const st=$('#saveStatus');st.className='status';st.textContent='Saving…';const meta=await gh('/contents/'+DATA_PATH+'?ref=main');const content='window.INCIDENTS='+JSON.stringify(data)+';\n';await gh('/contents/'+DATA_PATH,{method:'PUT',body:JSON.stringify({message:'Update Version 2 dog fouling log',content:btoa(unescape(encodeURIComponent(content))),sha:meta.sha})});for(const d of [...new Map(queuedDeletes.map(x=>[x.path,x])).values()]){await gh('/contents/'+d.path,{method:'DELETE',body:JSON.stringify({message:'Delete dog log file',sha:d.sha})})}queuedDeletes=[];dirty=false;repoTree=[];pending=[];st.textContent='✓ Saved to GitHub';st.className='status saved';if(mode==='edit')await loadPending();render()}catch(e){alert('Save failed: '+e.message);const st=$('#saveStatus');st.textContent='Save failed';st.className='status error'}}
+function move(idx,delta){
+  const n=idx+delta;if(n<0||n>=data.length)return;
+  [data[idx],data[n]]=[data[n],data[idx]];markDirty();render();
+}
+function queueDelete(item){
+  if(!item?.path||!item?.sha)return;
+  if(!queuedDeletes.some(x=>x.path===item.path))queuedDeletes.push({path:item.path,sha:item.sha});
+}
+async function gh(path,opts={}){
+  if(!token)throw new Error('GitHub not connected');
+  const r=await fetch('https://api.github.com/repos/'+REPO+path,{...opts,headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28',...(opts.headers||{})}});
+  if(!r.ok)throw new Error((await r.text())||('GitHub '+r.status));
+  return r.status===204?null:r.json();
+}
+async function verifyToken(){
+  if(!token)return false;
+  try{await gh('');return true}catch(e){token='';sessionStorage.removeItem('doglogGhToken');return false}
+}
+async function requestMode(wanted){
+  if(wanted==='public'){mode='public';render();return}
+  if(!(await verifyToken())){pendingMode=wanted;$('#authDlg').showModal();return}
+  mode=wanted;
+  if(mode==='edit')await loadPending();
+  render();
+}
+$('#authSave').onclick=async()=>{
+  token=$('#tokenInput').value.trim();
+  sessionStorage.setItem('doglogGhToken',token);
+  if(await verifyToken()){
+    $('#authDlg').close();$('#tokenInput').value='';
+    const wanted=pendingMode||'edit';pendingMode=null;mode=wanted;
+    if(mode==='edit')await loadPending();
+    render();
+  }else alert('Could not connect to GitHub with that token.');
+};
+$$('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
+
+async function ensureTree(force=false){
+  if(repoTree.length&&!force)return repoTree;
+  const j=await gh('/git/trees/main?recursive=1');
+  repoTree=(j.tree||[]).filter(x=>x.type==='blob');
+  return repoTree;
+}
+async function loadPending(){
+  await ensureTree(true);
+  const known=new Set(data.map(i=>i.uid));
+  const folders=[...new Set(repoTree.filter(x=>/^images\/DOGLOG-[^/]+\/batch\.json$/i.test(x.path)).map(x=>x.path.split('/')[1]))];
+  pending=folders.filter(id=>!known.has(id)).map(batchId=>({
+    batchId,
+    images:repoTree.filter(x=>x.path.startsWith('images/'+batchId+'/')&&/\.(jpe?g|png|webp)$/i.test(x.path)).map(x=>x.path)
+  }));
+}
+async function renderPending(){
+  $('#pendingWrap').style.display='block';
+  $('#pendingList').innerHTML=pending.length?pending.map(b=>`<div class="pending"><h3>${esc(b.batchId)}</h3><div>${b.images.length} photo${b.images.length===1?'':'s'}</div><div class="actions"><button class="btn primary small" data-create-batch="${esc(b.batchId)}">Create entry from batch</button><button class="btn danger small" data-delete-batch="${esc(b.batchId)}">Delete batch</button></div>${b.images.length?`<div class="photos">${b.images.map(p=>`<img loading="lazy" src="../${encPath(p)}" data-full="../${encPath(p)}" alt="Pending uploaded photograph">`).join('')}</div>`:''}</div>`).join(''):'<div class="status">No unattached pending batches found.</div>';
+  $$('[data-create-batch]').forEach(b=>b.onclick=()=>{
+    const pb=pending.find(x=>x.batchId===b.dataset.createBatch);if(!pb)return;
+    data.push({id:Math.max(0,...data.map(x=>Number(x.id)||0))+1,uid:pb.batchId,firstSeen:'',displayFirstSeen:'',photoRecorded:'',location:'',type:'',notes:'',images:pb.images.map(p=>p.replace(/^images\//,'')),checks:[]});
+    pending=pending.filter(x=>x!==pb);markDirty('Batch converted · add details, then save');render();
+  });
+  $$('[data-delete-batch]').forEach(b=>b.onclick=()=>{
+    const id=b.dataset.deleteBatch;if(!confirm('Delete this pending batch and all of its GitHub files when you save?'))return;
+    repoTree.filter(x=>x.type==='blob'&&x.path.startsWith('images/'+id+'/')).forEach(queueDelete);
+    pending=pending.filter(x=>x.batchId!==id);markDirty('Batch queued for deletion');renderPending();
+  });
+  $('#pendingList').querySelectorAll('.photos img').forEach(img=>img.onclick=()=>{$('#viewer img').src=img.dataset.full;$('#viewer').showModal()});
+}
+async function openRepoPicker(){
+  await ensureTree();
+  const imgs=repoTree.filter(x=>/^images\/.*\.(jpe?g|png|webp)$/i.test(x.path));
+  $('#repoImages').innerHTML=imgs.map(x=>`<div class="repoimg"><img loading="lazy" src="../${encPath(x.path)}" alt=""><button title="${esc(x.path)}" data-pick="${esc(x.path)}">${esc(x.path.split('/').pop())}</button></div>`).join('');
+  $$('[data-pick]').forEach(b=>b.onclick=()=>{
+    const rel=b.dataset.pick.replace(/^images\//,'');
+    if(activePhotoEntry&&!activePhotoEntry.images.includes(rel))activePhotoEntry.images.push(rel);
+    markDirty();$('#repoDlg').close();render();
+  });
+  $('#repoDlg').showModal();
+}
+async function resizeFile(file){
+  const bmp=await createImageBitmap(file),canvas=document.createElement('canvas');
+  canvas.width=1080;canvas.height=1440;
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,1080,1440);
+  const scale=Math.min(1080/bmp.width,1440/bmp.height),w=bmp.width*scale,h=bmp.height*scale;
+  ctx.drawImage(bmp,(1080-w)/2,(1440-h)/2,w,h);
+  return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Could not convert image')),'image/jpeg',0.9));
+}
+async function blobToBase64(blob){
+  const ab=await blob.arrayBuffer(),bytes=new Uint8Array(ab);let bin='';
+  for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+  return btoa(bin);
+}
+async function uploadFiles(files){
+  if(!activePhotoEntry)return;
+  await ensureTree();
+  for(const file of files){
+    const blob=await resizeFile(file),base=await blobToBase64(blob);
+    const folder=activePhotoEntry.uid;
+    const stem=(file.name.replace(/\.[^.]+$/,'')||'photo').replace(/[^A-Za-z0-9._-]+/g,'_');
+    let name=stem+'.jpg',path='images/'+folder+'/'+name;
+    if(repoTree.some(x=>x.path===path)){name=stem+'-'+Date.now()+'.jpg';path='images/'+folder+'/'+name}
+    await gh('/contents/'+path,{method:'PUT',body:JSON.stringify({message:'Add dog log evidence photo',content:base})});
+    repoTree.push({path,sha:null,type:'blob'});
+    const rel=path.replace(/^images\//,'');
+    if(activeFollowupUid){
+      reviewDraft(activeFollowupUid).images.push(rel);
+      markDirty('Follow-up photo uploaded · add review, then save');
+    }else{
+      activePhotoEntry.images.push(rel);
+      markDirty();
+    }
+  }
+  render();
+}
+$('#fileInput').onchange=async e=>{
+  try{await uploadFiles([...e.target.files])}catch(err){alert('Upload failed: '+err.message)}
+  e.target.value='';
+};
+
+async function saveAll(){
+  if(!(await verifyToken())){pendingMode=mode;$('#authDlg').showModal();return}
+  const st=$('#saveStatus');st.className='status';st.textContent='Saving…';
+  try{
+    const meta=await gh('/contents/'+DATA_PATH+'?ref=main');
+    const content='window.INCIDENTS='+JSON.stringify(data)+';\n';
+    await gh('/contents/'+DATA_PATH,{method:'PUT',body:JSON.stringify({message:'Update Version 2 dog fouling log',content:btoa(unescape(encodeURIComponent(content))),sha:meta.sha})});
+    let failedDeletes=0;
+    for(const d of queuedDeletes){
+      try{
+        let sha=d.sha;
+        if(!sha){const meta=await gh('/contents/'+d.path+'?ref=main');sha=meta.sha}
+        await gh('/contents/'+d.path,{method:'DELETE',body:JSON.stringify({message:'Delete dog log file',sha})});
+      }catch(e){console.warn('Delete failed',d.path,e);failedDeletes++}
+    }
+    queuedDeletes=[];
+    dirty=false;repoTree=[];pending=[];
+    st.textContent=failedDeletes?`✓ Log saved; ${failedDeletes} file deletion${failedDeletes===1?'':'s'} failed`:'✓ Saved to GitHub';
+    st.className=failedDeletes?'status error':'status saved';
+    if(mode==='edit')await loadPending();
+    render();
+  }catch(e){
+    st.textContent='Save failed';st.className='status error';alert('Save failed: '+e.message);
+  }
+}
 $('#saveAll').onclick=saveAll;
-async function loadTree(){if(repoTree.length)return repoTree;let j;if(token)j=await gh('/git/trees/main?recursive=1');else{const r=await fetch('https://api.github.com/repos/'+REPO+'/git/trees/main?recursive=1');if(!r.ok)throw new Error('Could not read repository tree');j=await r.json()}repoTree=(j.tree||[]).filter(x=>x.type==='blob');return repoTree}
-async function loadPending(){await loadTree();const knownIds=new Set(data.map(i=>i.uid));const folders=[...new Set(repoTree.filter(x=>/^images\/DOGLOG-[^/]+\/batch\.json$/i.test(x.path)).map(x=>x.path.split('/')[1]))];pending=folders.filter(batchId=>!knownIds.has(batchId)).map(batchId=>({batchId,images:repoTree.filter(x=>x.path.startsWith('images/'+batchId+'/')&&/\.(jpe?g|png|webp)$/i.test(x.path)).map(x=>x.path)}));}
-async function renderPending(){if(!repoTree.length)await loadPending();$('#pendingList').innerHTML=pending.length?pending.map(b=>`<div class="pending"><h3>${esc(b.batchId)}</h3><div>Photos: ${b.images.length}</div><button class="btn primary small" data-create="${esc(b.batchId)}">Create entry from batch</button> <button class="btn danger small" data-delete-batch="${esc(b.batchId)}">Delete batch</button>${b.images.length?`<div class="photos">${b.images.map(p=>`<img src="../${encPath(p)}" data-full="../${encPath(p)}">`).join('')}</div>`:''}</div>`).join(''):'<div class="status">No unattached pending batches found.</div>';$$('[data-create]').forEach(b=>b.onclick=()=>{const pb=pending.find(x=>x.batchId===b.dataset.create);data.push({id:Math.max(0,...data.map(x=>Number(x.id)||0))+1,uid:pb.batchId,firstSeen:'',displayFirstSeen:'',photoRecorded:'',location:'',type:'',notes:'',images:pb.images.map(p=>p.replace(/^images\//,'')),checks:[]});pending=pending.filter(x=>x!==pb);markDirty();render()});$$('[data-delete-batch]').forEach(b=>b.onclick=()=>{const id=b.dataset.deleteBatch;if(!confirm('Delete this pending batch and all of its GitHub files when you save?'))return;repoTree.filter(x=>x.type==='blob'&&x.path.startsWith('images/'+id+'/')).forEach(x=>queuedDeletes.push({path:x.path,sha:x.sha}));pending=pending.filter(x=>x.batchId!==id);markDirty();renderPending()})}
-async function openRepoPicker(){await loadTree();const imgs=repoTree.filter(x=>/^images\/.*\.(jpe?g|png|webp)$/i.test(x.path));$('#repoImages').innerHTML=imgs.map(x=>`<div class="repoimg"><img loading="lazy" src="../${encPath(x.path)}"><button data-pick="${esc(x.path)}">${esc(x.path.split('/').pop())}</button></div>`).join('');$$('[data-pick]').forEach(b=>b.onclick=()=>{const p=b.dataset.pick.replace(/^images\//,'');activePhotoEntry.images=activePhotoEntry.images||[];if(!activePhotoEntry.images.includes(p))activePhotoEntry.images.push(p);markDirty();$('#repoDlg').close();render()});$('#repoDlg').showModal()}
-async function resizeFile(file){const bmp=await createImageBitmap(file),canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1440;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,1080,1440);const scale=Math.min(1080/bmp.width,1440/bmp.height),w=bmp.width*scale,h=bmp.height*scale;ctx.drawImage(bmp,(1080-w)/2,(1440-h)/2,w,h);return new Promise(res=>canvas.toBlob(res,'image/jpeg',.9))}
-async function uploadFiles(files){if(!token){$('#authDlg').showModal();return}for(const file of files){const blob=await resizeFile(file),ab=await blob.arrayBuffer(),bytes=new Uint8Array(ab);let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode(...bytes.subarray(i,i+0x8000));const base=btoa(bin),folder=activePhotoEntry.uid||('LEGACY-'+String(entryNo(activePhotoEntry)).padStart(3,'0')),name=(file.name.replace(/\.[^.]+$/,'')||('photo-'+Date.now()))+'.jpg',path='images/'+folder+'/'+name;await gh('/contents/'+path,{method:'PUT',body:JSON.stringify({message:'Add dog log evidence photo',content:base})});const rel=path.replace(/^images\//,'');if(activeFollowupEntry)activeFollowupEntry.paths.push(rel);else{activePhotoEntry.images=activePhotoEntry.images||[];activePhotoEntry.images.push(rel)}repoTree=[];markDirty()}if(!activeFollowupEntry)render();else $('#saveStatus').textContent='Follow-up photo uploaded; add the review, then save'}
-$('#fileInput').onchange=async e=>{try{await uploadFiles([...e.target.files])}catch(err){alert('Upload failed: '+err.message)}e.target.value=''};
-$$('.modebar [data-mode]').forEach(b=>b.onclick=async()=>{const wanted=b.dataset.mode;if(wanted==='public'){mode='public';render();return}if(!token){pendingMode=wanted;$('#authDlg').showModal();return}try{await gh('')}catch(e){token='';sessionStorage.removeItem('doglogGhToken');pendingMode=wanted;$('#authDlg').showModal();return}mode=wanted;if(mode==='edit')await loadPending();render()});
+$$('.modebar [data-mode]').forEach(b=>b.onclick=()=>requestMode(b.dataset.mode));
 $('#search').oninput=render;$('#typeFilter').onchange=render;
-[...new Set(data.map(i=>i.type).filter(Boolean))].sort().forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;$('#typeFilter').appendChild(o)});
-$('#viewer button').onclick=()=>$('#viewer').close();$('#viewer').onclick=e=>{if(e.target===$('#viewer'))$('#viewer').close()};
-window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});if(ADMIN){$('.modebar').hidden=false}else{$('.modebar').hidden=true;$('.savebar').style.display='none';$('#authNotice').hidden=true;$('#versionBadge').hidden=true}render();
+TYPES.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;$('#typeFilter').appendChild(o)});
+$('#viewer button').onclick=()=>$('#viewer').close();
+$('#viewer').onclick=e=>{if(e.target===$('#viewer'))$('#viewer').close()};
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
+
+if(!ADMIN){
+  $('#modebar').hidden=true;
+  $('.savebar').style.display='none';
+  $('#authNotice').hidden=true;
+  $('#versionBadge').hidden=true;
+}
+render();
 </script>
 </body>
 </html>
