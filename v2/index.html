@@ -26,9 +26,9 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>Lewisham Dog Fouling Evidence Log <span id="versionBadge" style="font-size:.65em;opacity:.65">V2</span></h1><div class="sub">An ongoing photographic record of dog fouling and discarded bagged dog waste observed on local pedestrian routes. Follow-up checks document whether individual incidents remain, have been cleared, or have changed.</div></div></header>
+<header><div class="wrap"><h1>Lewisham Dog Fouling Evidence Log <span id="versionBadge" style="font-size:.65em;opacity:.65" hidden>V2</span></h1><div class="sub">An ongoing photographic record of dog fouling and discarded bagged dog waste observed on local pedestrian routes. Follow-up checks document whether individual incidents remain, have been cleared, or have changed.</div></div></header>
 <main class="wrap">
-<div id="modebar" class="modebar">
+<div id="modebar" class="modebar" hidden>
   <button class="btn active" data-mode="public">Public view</button>
   <button class="btn" data-mode="review">Incident review</button>
   <button class="btn" data-mode="edit">Edit log</button>
@@ -59,19 +59,28 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
 <dialog id="viewer"><button aria-label="Close">×</button><img alt="Expanded evidence photograph"></dialog>
 <input id="fileInput" type="file" accept="image/*" multiple hidden>
 
-<script src="incidents.js"></script>
 <script>
 const REPO='interzone83/LewishamDogFoulingLog';
 const DATA_PATH='v2/incidents.js';
 const ADMIN=new URLSearchParams(location.search).get('admin')==='1';
 const TYPES=['Unbagged fouling','Spread / smeared fouling','Residue after attempted clean-up','Bagged dog waste'];
 
-let data=(window.INCIDENTS||[]).map((x,i)=>({
-  ...x,
-  uid:x.uid||('LEGACY-'+String(x.id||i+1).padStart(3,'0')),
-  images:x.images||[],
-  checks:(x.checks||[]).map(c=>({...c,images:c.images||[]}))
-}));
+let data=[];
+function normaliseData(raw){
+  return (raw||[]).map((x,i)=>({
+    ...x,
+    uid:x.uid||('LEGACY-'+String(x.id||i+1).padStart(3,'0')),
+    images:x.images||[],
+    checks:(x.checks||[]).map(c=>({...c,images:c.images||[]}))
+  }));
+}
+async function loadInitialData(){
+  const r=await fetch('incidents.js?ts='+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw new Error('Could not load incident data ('+r.status+')');
+  const txt=(await r.text()).trim();
+  const json=txt.replace(/^window\.INCIDENTS\s*=\s*/,'').replace(/;\s*$/,'');
+  data=normaliseData(JSON.parse(json));
+}
 let mode='public';
 let dirty=false;
 let token=sessionStorage.getItem('doglogGhToken')||'';
@@ -234,8 +243,8 @@ function move(idx,delta){
   [data[idx],data[n]]=[data[n],data[idx]];markDirty();render();
 }
 function queueDelete(item){
-  if(!item?.path||!item?.sha)return;
-  if(!queuedDeletes.some(x=>x.path===item.path))queuedDeletes.push({path:item.path,sha:item.sha});
+  if(!item?.path)return;
+  if(!queuedDeletes.some(x=>x.path===item.path))queuedDeletes.push({path:item.path,sha:item.sha||null});
 }
 async function gh(path,opts={}){
   if(!token)throw new Error('GitHub not connected');
@@ -380,13 +389,18 @@ $('#viewer button').onclick=()=>$('#viewer').close();
 $('#viewer').onclick=e=>{if(e.target===$('#viewer'))$('#viewer').close()};
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
 
-if(!ADMIN){
-  $('#modebar').hidden=true;
+if(ADMIN){
+  $('#modebar').hidden=false;
+  $('#versionBadge').hidden=false;
+}else{
   $('.savebar').style.display='none';
   $('#authNotice').hidden=true;
-  $('#versionBadge').hidden=true;
 }
-render();
+loadInitialData().then(render).catch(e=>{
+  console.error(e);
+  $('#log').innerHTML='<div class="notice">The evidence log could not be loaded. Please refresh the page.</div>';
+  $('#empty').hidden=true;
+});
 </script>
 </body>
 </html>
