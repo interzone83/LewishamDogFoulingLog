@@ -96,8 +96,8 @@ function bindCards(){
   const up=el.querySelector('[data-up]');if(up)up.onclick=()=>move(idx,-1);const down=el.querySelector('[data-down]');if(down)down.onclick=()=>move(idx,1);
   const ex=el.querySelector('[data-add-existing]');if(ex)ex.onclick=()=>{activePhotoEntry=i;openRepoPicker()};
   const upl=el.querySelector('[data-upload-photo]');if(upl)upl.onclick=()=>{activePhotoEntry=i;activeFollowupEntry=null;$('#fileInput').click()};
-  const fp=el.querySelector('[data-follow-photo]');if(fp)fp.onclick=()=>{activePhotoEntry=i;activeFollowupEntry={card:el,paths:[]};$('#fileInput').click()};
-  const ar=el.querySelector('[data-add-review]');if(ar)ar.onclick=()=>{const paths=activeFollowupEntry?.card===el?activeFollowupEntry.paths:[];i.checks.push({date:el.querySelector('[data-rdate]').value,status:el.querySelector('[data-rstatus]').value,note:el.querySelector('[data-rnote]').value.trim(),images:paths});activeFollowupEntry=null;markDirty();render()};
+  const fp=el.querySelector('[data-follow-photo]');if(fp)fp.onclick=()=>{activePhotoEntry=i;activeFollowupEntry={uid:i.uid,paths:[]};$('#fileInput').click()};
+  const ar=el.querySelector('[data-add-review]');if(ar)ar.onclick=()=>{const paths=activeFollowupEntry?.uid===i.uid?activeFollowupEntry.paths:[];i.checks.push({date:el.querySelector('[data-rdate]').value,status:el.querySelector('[data-rstatus]').value,note:el.querySelector('[data-rnote]').value.trim(),images:paths});activeFollowupEntry=null;markDirty();render()};
   el.ondragstart=e=>{dragIndex=idx;el.classList.add('dragging');e.dataTransfer.effectAllowed='move'};
   el.ondragend=()=>el.classList.remove('dragging');
   el.ondragover=e=>{if(mode==='edit')e.preventDefault()};
