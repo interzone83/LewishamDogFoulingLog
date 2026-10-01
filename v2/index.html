@@ -53,13 +53,13 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}
 <script>
 const REPO='interzone83/LewishamDogFoulingLog', DATA_PATH='v2/incidents.js';
 let data=(window.INCIDENTS||[]).map((x,i)=>({...x,uid:x.uid||('LEGACY-'+String(x.id||i+1).padStart(3,'0')),checks:(x.checks||[]).map(c=>({...c,images:c.images||[]}))}));
-data.sort((a,b)=>(a.id||0)-(b.id||0));
-let mode='public',dirty=false,token=sessionStorage.getItem('doglogGhToken')||'',repoTree=[],pending=[],activePhotoEntry=null,activeFollowupEntry=null,dragIndex=null,pendingMode=null;
+
+const ADMIN=new URLSearchParams(location.search).get('admin')==='1';let mode='public',dirty=false,token=sessionStorage.getItem('doglogGhToken')||'',repoTree=[],pending=[],activePhotoEntry=null,activeFollowupEntry=null,dragIndex=null,pendingMode=null;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const encPath=p=>p.split('/').map(encodeURIComponent).join('/'), imageURL=p=>p.startsWith('data:')?p:(p.startsWith('images/')?'../'+encPath(p):'../images/'+encPath(p));
-function markDirty(){dirty=true;$('#saveStatus').textContent='Unsaved changes'}
+function markDirty(){dirty=true;$('#saveStatus').textContent='Unsaved changes';$('#saveStatus').className='status'}function isComplete(i){return !!(i.firstSeen&&i.location&&i.type&&i.notes)}
 function localISODate(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}function displayDate(i){if(i.displayFirstSeen)return i.displayFirstSeen;if(!i.firstSeen)return'';const m=String(i.firstSeen).match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);if(!m)return i.firstSeen;const d=new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]);return d.toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
-function refreshStats(){$('#incidentCount').textContent=data.length;$('#photoCount').textContent=data.reduce((n,i)=>n+(i.images?.length||0)+(i.checks||[]).reduce((m,c)=>m+(c.images?.length||0),0),0);$('#locationCount').textContent=new Set(data.map(i=>i.location).filter(Boolean)).size}
+function refreshStats(){const rows=mode==='edit'?data:data.filter(isComplete);$('#incidentCount').textContent=rows.length;$('#photoCount').textContent=rows.reduce((n,i)=>n+(i.images?.length||0)+(i.checks||[]).reduce((m,c)=>m+(c.images?.length||0),0),0);$('#locationCount').textContent=new Set(rows.map(i=>i.location).filter(Boolean)).size}
 function entryNo(i){return data.indexOf(i)+1}
 function card(i){
  const no=entryNo(i),photos=i.images||[],checks=i.checks||[];
@@ -83,7 +83,7 @@ function render(){
  $$('.modebar [data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
  $('#authNotice').hidden=mode==='public';$('#pendingWrap').style.display=mode==='edit'?'block':'none';
  const q=$('#search').value.trim().toLowerCase(),t=$('#typeFilter').value;
- const rows=data.filter(i=>(!t||i.type===t)&&(!q||[i.location,i.notes,i.type,i.firstSeen,i.uid].join(' ').toLowerCase().includes(q)));
+ const rows=data.filter(i=>(mode==='edit'||isComplete(i))&&(!t||i.type===t)&&(!q||[i.location,i.notes,i.type,i.firstSeen,i.uid].join(' ').toLowerCase().includes(q)));
  $('#log').innerHTML=(mode==='public'?[...rows].reverse():rows).map(card).join('');
  refreshStats();bindCards();if(mode==='edit')renderPending();
 }
@@ -114,7 +114,7 @@ async function saveAll(){if(!token){$('#authDlg').showModal();return}try{$('#sav
 $('#saveAll').onclick=saveAll;
 async function loadTree(){if(repoTree.length)return repoTree;const r=await fetch('https://api.github.com/repos/'+REPO+'/git/trees/main?recursive=1');const j=await r.json();repoTree=(j.tree||[]).filter(x=>x.type==='blob');return repoTree}
 async function loadPending(){await loadTree();const knownIds=new Set(data.map(i=>i.uid));const folders=[...new Set(repoTree.filter(x=>/^images\/DOGLOG-[^/]+\/batch\.json$/i.test(x.path)).map(x=>x.path.split('/')[1]))];pending=folders.filter(batchId=>!knownIds.has(batchId)).map(batchId=>({batchId,images:repoTree.filter(x=>x.path.startsWith('images/'+batchId+'/')&&/\.(jpe?g|png|webp)$/i.test(x.path)).map(x=>x.path)}));}
-async function renderPending(){if(!repoTree.length)await loadPending();$('#pendingList').innerHTML=pending.length?pending.map(b=>`<div class="pending"><h3>${esc(b.batchId)}</h3><div>Photos: ${b.images.length}</div><button class="btn primary small" data-create="${esc(b.batchId)}">Create entry from batch</button>${b.images.length?`<div class="photos">${b.images.map(p=>`<img src="../${encPath(p)}" data-full="../${encPath(p)}">`).join('')}</div>`:''}</div>`).join(''):'<div class="status">No unattached pending batches found.</div>';$$('[data-create]').forEach(b=>b.onclick=()=>{const pb=pending.find(x=>x.batchId===b.dataset.create);data.push({id:data.length+1,uid:pb.batchId,firstSeen:'',displayFirstSeen:'',photoRecorded:'',location:'',type:'',notes:'',images:pb.images.map(p=>p.replace(/^images\//,'')),checks:[]});pending=pending.filter(x=>x!==pb);markDirty();render()})}
+async function renderPending(){if(!repoTree.length)await loadPending();$('#pendingList').innerHTML=pending.length?pending.map(b=>`<div class="pending"><h3>${esc(b.batchId)}</h3><div>Photos: ${b.images.length}</div><button class="btn primary small" data-create="${esc(b.batchId)}">Create entry from batch</button>${b.images.length?`<div class="photos">${b.images.map(p=>`<img src="../${encPath(p)}" data-full="../${encPath(p)}">`).join('')}</div>`:''}</div>`).join(''):'<div class="status">No unattached pending batches found.</div>';$$('[data-create]').forEach(b=>b.onclick=()=>{const pb=pending.find(x=>x.batchId===b.dataset.create);data.push({id:Math.max(0,...data.map(x=>Number(x.id)||0))+1,uid:pb.batchId,firstSeen:'',displayFirstSeen:'',photoRecorded:'',location:'',type:'',notes:'',images:pb.images.map(p=>p.replace(/^images\//,'')),checks:[]});pending=pending.filter(x=>x!==pb);markDirty();render()})}
 async function openRepoPicker(){await loadTree();const imgs=repoTree.filter(x=>/^images\/.*\.(jpe?g|png|webp)$/i.test(x.path));$('#repoImages').innerHTML=imgs.map(x=>`<div class="repoimg"><img loading="lazy" src="../${encPath(x.path)}"><button data-pick="${esc(x.path)}">${esc(x.path.split('/').pop())}</button></div>`).join('');$$('[data-pick]').forEach(b=>b.onclick=()=>{const p=b.dataset.pick.replace(/^images\//,'');activePhotoEntry.images=activePhotoEntry.images||[];if(!activePhotoEntry.images.includes(p))activePhotoEntry.images.push(p);markDirty();$('#repoDlg').close();render()});$('#repoDlg').showModal()}
 async function resizeFile(file){const bmp=await createImageBitmap(file),canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1440;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,1080,1440);const scale=Math.min(1080/bmp.width,1440/bmp.height),w=bmp.width*scale,h=bmp.height*scale;ctx.drawImage(bmp,(1080-w)/2,(1440-h)/2,w,h);return new Promise(res=>canvas.toBlob(res,'image/jpeg',.9))}
 async function uploadFiles(files){if(!token){$('#authDlg').showModal();return}for(const file of files){const blob=await resizeFile(file),ab=await blob.arrayBuffer(),bytes=new Uint8Array(ab);let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode(...bytes.subarray(i,i+0x8000));const base=btoa(bin),folder=activePhotoEntry.uid||('LEGACY-'+String(entryNo(activePhotoEntry)).padStart(3,'0')),name=(file.name.replace(/\.[^.]+$/,'')||('photo-'+Date.now()))+'.jpg',path='images/'+folder+'/'+name;await gh('/contents/'+path,{method:'PUT',body:JSON.stringify({message:'Add dog log evidence photo',content:base})});const rel=path.replace(/^images\//,'');if(activeFollowupEntry)activeFollowupEntry.paths.push(rel);else{activePhotoEntry.images=activePhotoEntry.images||[];activePhotoEntry.images.push(rel)}repoTree=[];markDirty()}if(!activeFollowupEntry)render();else $('#saveStatus').textContent='Follow-up photo uploaded; add the review, then save'}
@@ -123,8 +123,7 @@ $('.modebar [data-mode]').forEach(b=>b.onclick=async()=>{const wanted=b.dataset.
 $('#search').oninput=render;$('#typeFilter').onchange=render;
 [...new Set(data.map(i=>i.type).filter(Boolean))].sort().forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;$('#typeFilter').appendChild(o)});
 $('#viewer button').onclick=()=>$('#viewer').close();$('#viewer').onclick=e=>{if(e.target===$('#viewer'))$('#viewer').close()};
-window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
-render();
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});if(!ADMIN){$('.modebar').style.display='none';$('.savebar').style.display='none';$('#authNotice').hidden=true}render();
 </script>
 </body>
 </html>
