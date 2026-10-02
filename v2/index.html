@@ -19,7 +19,7 @@ main{padding:18px}.modebar,.savebar,.tools{display:flex;gap:9px;flex-wrap:wrap;m
 .reviewhistory{margin-top:10px}.check{padding:8px 10px;border-left:3px solid var(--g);background:#f7faf8;margin:7px 0}.check .photos{margin-top:8px}
 .pendingwrap{display:none;margin:0 0 16px}.edit-mode .pendingwrap{display:block}.pending{padding:13px;border-color:#d6b75f;background:#fffdf5;margin-bottom:10px}.pending h3{margin:0 0 6px}.pending .photos{margin:10px -13px -13px}
 .savebar{display:none;align-items:center}.edit-mode .savebar,.review-mode .savebar{display:flex}.status{font-size:.9rem;color:var(--muted)}.status.saved{color:var(--g);font-weight:800}.status.error{color:var(--danger);font-weight:800}.notice{padding:10px 12px;border-radius:9px;background:#fff6cf;color:#624c00;margin-bottom:12px}
-dialog{border:0;border-radius:14px;padding:0;max-width:min(92vw,760px);width:100%}dialog::backdrop{background:#0009}.dialogbody{padding:18px}.dialogbody h3{margin-top:0}.dialogactions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.repoimages{max-height:58vh;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px}.repoimg{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}.repoimg img{width:100%;height:110px;object-fit:cover}.repoimg button{width:100%;border:0;border-top:1px solid var(--line);padding:7px;background:#fff;cursor:pointer;overflow:hidden;text-overflow:ellipsis}
+dialog{border:0;border-radius:14px;padding:0;max-width:min(92vw,760px);width:100%}dialog::backdrop{background:#0009}.dialogbody{padding:18px}.dialogbody h3{margin-top:0}.dialogactions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.browserbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.browserpath{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem;color:var(--muted);word-break:break-all}.repoimages{max-height:58vh;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px}.repoimg,.repofolder{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}.repoimg img{width:100%;height:110px;object-fit:cover}.repoimg button,.repofolder button{width:100%;border:0;border-top:1px solid var(--line);padding:7px;background:#fff;cursor:pointer;overflow:hidden;text-overflow:ellipsis}.repofolder button{border-top:0;min-height:88px;font-weight:700}.foldericon{display:block;font-size:2rem;margin-bottom:5px}
 #viewer{background:transparent;max-width:none;width:auto}#viewer img{max-width:95vw;max-height:90vh}#viewer button{position:fixed;right:16px;top:16px;border:0;border-radius:50%;font-size:24px;width:42px;height:42px}
 footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty{padding:24px;text-align:center;color:var(--muted)}
 @media(max-width:650px){.stats,.tools,.editgrid,.reviewgrid{grid-template-columns:1fr}.wide{grid-column:auto}.head{flex-direction:column}.photos img{height:220px}}
@@ -37,6 +37,7 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
 <div id="authNotice" class="notice" hidden>Review and editing writes directly to the GitHub repository. Your GitHub token is kept only for this browser tab/session and is never saved into the site.</div>
 <div class="savebar">
   <button id="saveAll" class="btn primary">Save changes to GitHub</button>
+  <button id="exportCsv" class="btn">Export CSV</button>
   <span id="saveStatus" class="status">GitHub connected · no unsaved changes</span>
 </div>
 <section class="stats">
@@ -55,7 +56,7 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
 <footer>Observations and estimated ages are recorded as such and should not be read as independently verified facts.</footer>
 
 <dialog id="authDlg"><div class="dialogbody"><h3>Connect GitHub editing</h3><p>Enter the fine-grained repository token used by your upload shortcut. It is held in session storage for this browser tab/session only.</p><input id="tokenInput" type="password" autocomplete="off" placeholder="GitHub token" style="width:100%;padding:10px"><div class="dialogactions"><button class="btn" data-close>Cancel</button><button id="authSave" class="btn primary">Connect</button></div></div></dialog>
-<dialog id="repoDlg"><div class="dialogbody"><h3>Select an existing repository image</h3><div id="repoImages" class="repoimages"></div><div class="dialogactions"><button class="btn" data-close>Close</button></div></div></dialog>
+<dialog id="repoDlg"><div class="dialogbody"><h3>Select an existing repository image</h3><div class="browserbar"><button id="browserUp" class="btn small">↑ Up one level</button><span id="browserPath" class="browserpath">images</span></div><div id="repoImages" class="repoimages"></div><div class="dialogactions"><button class="btn" data-close>Close</button></div></div></dialog>
 <dialog id="viewer"><button aria-label="Close">×</button><img alt="Expanded evidence photograph"></dialog>
 <input id="fileInput" type="file" accept="image/*" multiple hidden>
 
@@ -92,6 +93,7 @@ let activeFollowupUid=null;
 let reviewDrafts={};
 let queuedDeletes=[];
 let dragIndex=null;
+let browserPath='images';
 
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -305,17 +307,41 @@ async function renderPending(){
   });
   $('#pendingList').querySelectorAll('.photos img').forEach(img=>img.onclick=()=>{$('#viewer img').src=img.dataset.full;$('#viewer').showModal()});
 }
-async function openRepoPicker(){
-  await ensureTree();
-  const imgs=repoTree.filter(x=>/^images\/.*\.(jpe?g|png|webp)$/i.test(x.path));
-  $('#repoImages').innerHTML=imgs.map(x=>`<div class="repoimg"><img loading="lazy" src="../${encPath(x.path)}" alt=""><button title="${esc(x.path)}" data-pick="${esc(x.path)}">${esc(x.path.split('/').pop())}</button></div>`).join('');
+function folderExists(path){
+  return repoTree.some(x=>x.path.startsWith(path+'/'));
+}
+function renderRepoBrowser(){
+  const base=browserPath.replace(/\/$/,'');
+  $('#browserPath').textContent=base;
+  $('#browserUp').disabled=base==='images';
+  const prefix=base+'/',folders=new Set(),images=[];
+  for(const x of repoTree){
+    if(!x.path.startsWith(prefix))continue;
+    const rest=x.path.slice(prefix.length);
+    if(rest.includes('/'))folders.add(rest.split('/')[0]);
+    else if(/\.(jpe?g|png|webp)$/i.test(rest))images.push(x);
+  }
+  const folderHtml=[...folders].sort().map(name=>`<div class="repofolder"><button data-folder="${esc(name)}"><span class="foldericon">📁</span>${esc(name)}</button></div>`).join('');
+  const imageHtml=images.sort((a,b)=>a.path.localeCompare(b.path)).map(x=>`<div class="repoimg"><img loading="lazy" src="../${encPath(x.path)}" alt=""><button title="${esc(x.path)}" data-pick="${esc(x.path)}">${esc(x.path.split('/').pop())}</button></div>`).join('');
+  $('#repoImages').innerHTML=folderHtml+imageHtml||'<div class="status">This folder contains no supported images.</div>';
+  $$('[data-folder]').forEach(b=>b.onclick=()=>{browserPath=base+'/'+b.dataset.folder;renderRepoBrowser()});
   $$('[data-pick]').forEach(b=>b.onclick=()=>{
     const rel=b.dataset.pick.replace(/^images\//,'');
     if(activePhotoEntry&&!activePhotoEntry.images.includes(rel))activePhotoEntry.images.push(rel);
     markDirty();$('#repoDlg').close();render();
   });
+}
+async function openRepoPicker(){
+  await ensureTree();
+  const preferred=activePhotoEntry?.uid?'images/'+activePhotoEntry.uid:'images';
+  browserPath=folderExists(preferred)?preferred:'images';
+  renderRepoBrowser();
   $('#repoDlg').showModal();
 }
+$('#browserUp').onclick=()=>{
+  if(browserPath==='images')return;
+  const parts=browserPath.split('/');parts.pop();browserPath=parts.join('/')||'images';renderRepoBrowser();
+};
 async function resizeFile(file){
   const bmp=await createImageBitmap(file),canvas=document.createElement('canvas');
   canvas.width=1080;canvas.height=1440;
@@ -355,6 +381,22 @@ $('#fileInput').onchange=async e=>{
   try{await uploadFiles([...e.target.files])}catch(err){alert('Upload failed: '+err.message)}
   e.target.value='';
 };
+
+function csvCell(v){
+  const s=String(v??'');
+  return '"'+s.replace(/"/g,'""')+'"';
+}
+function exportCsv(){
+  const rows=[['Entry number','Record ID','Complete','Date/time','Location','Type','Observation','Original photos','Follow-up count','Follow-up history']];
+  data.forEach((i,idx)=>{
+    const history=(i.checks||[]).map(c=>[c.date,c.status,c.note||'',(c.images||[]).join(' | ')].filter(Boolean).join(' — ')).join(' || ');
+    rows.push([idx+1,i.uid,isComplete(i)?'Yes':'No',i.firstSeen||'',i.location||'',i.type||'',i.notes||'',(i.images||[]).join(' | '),(i.checks||[]).length,history]);
+  });
+  const csv='\uFEFF'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='Lewisham-Dog-Fouling-Log-'+localISODate()+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+$('#exportCsv').onclick=exportCsv;
 
 async function saveAll(){
   if(!(await verifyToken())){pendingMode=mode;$('#authDlg').showModal();return}
