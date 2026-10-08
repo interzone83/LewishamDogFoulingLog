@@ -53,11 +53,11 @@ V2 stores records in `v2/incidents.js`. The page fetches that file with a cache-
 2. Choose **Incident review** or **Edit log**.
 3. If prompted, connect with the fine-grained GitHub token.
 4. Make changes.
-5. Press **Save changes to GitHub**.
+5. Save either with the sticky **Save changes to GitHub** control or the save button inside the incident being edited.
 6. Wait for **✓ Saved to GitHub**.
 
-The page warns before leaving if there are unsaved data changes.
+The page warns before leaving if there are unsaved data changes. Admin mode and scroll position are remembered per mode, so refreshing should return to the same working view and approximate position rather than dropping back to the top/public view.
 
 ## Image standard
 
-Images uploaded through the V2 browser editor are written as 1080 × 1440 JPEGs. Phone shortcut uploads remain in their DOGLOG folders and are attached by relative repository path.
+Images uploaded through the V2 browser editor are written as 1080 × 1440 JPEGs at approximately 50% JPEG quality to keep repository file sizes modest. Original source filenames are retained where supplied by the browser; collisions receive a unique suffix. Phone/Scriptable uploads remain in their permanent-ID folders and are attached by relative repository path.
