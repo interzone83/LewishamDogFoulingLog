@@ -13,14 +13,14 @@ main{padding:18px}.modebar,.savebar,.tools{display:flex;gap:9px;flex-wrap:wrap;m
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.stat,.card,.pending{background:#fff;border:1px solid var(--line);border-radius:13px}.stat{padding:14px}.stat b{display:block;font-size:1.55rem}
 .tools{display:grid;grid-template-columns:1fr 220px}.tools input,.tools select,.editgrid input,.editgrid textarea,.editgrid select,.reviewgrid input,.reviewgrid textarea,.reviewgrid select{width:100%;padding:9px;border:1px solid #bcc8c1;border-radius:8px;background:#fff}
 #log{display:grid;gap:14px}.card{overflow:hidden}.head{display:flex;justify-content:space-between;gap:12px;padding:15px 15px 7px}.date{font-weight:800;color:var(--g)}h2{font-size:1.08rem;margin:3px 0}.badge{font-size:.76rem;background:#e8f3ed;color:var(--g);padding:6px 9px;border-radius:999px;height:max-content}.meta{padding:0 15px 13px;color:var(--muted);line-height:1.5}.meta b{color:#1d2925}.uid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;color:#7c8a84;margin-top:4px}
-.photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:#ddd}.photo{position:relative}.photos img{width:100%;height:250px;object-fit:cover;display:block;cursor:zoom-in}.photoctrl{position:absolute;top:6px;right:6px}.photoctrl .btn{box-shadow:0 1px 5px #0005}
+.photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:#ddd}.photo{position:relative}.photos img{width:100%;height:250px;object-fit:cover;display:block;cursor:zoom-in}.photosize{position:absolute;top:7px;left:7px;background:#15271ee8;color:white;border-radius:5px;padding:4px 7px;font-size:.76rem;font-weight:700;pointer-events:none}.photoctrl{position:absolute;top:6px;right:6px}.photoctrl .btn{box-shadow:0 1px 5px #0005}
 .editbox,.reviewbox{display:none;padding:14px 15px;border-top:1px solid var(--line);background:#fbfcfb}.edit-mode .editbox{display:block}.review-mode .reviewbox{display:block}
 .editgrid,.reviewgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wide{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.dragging{opacity:.45}.draghandle{cursor:grab}
 .reviewhistory{margin-top:10px}.check{padding:8px 10px;border-left:3px solid var(--g);background:#f7faf8;margin:7px 0}.check .photos{margin-top:8px}
 .pendingwrap{display:none;margin:0 0 16px}.edit-mode .pendingwrap{display:block}.pending{padding:13px;border-color:#d6b75f;background:#fffdf5;margin-bottom:10px}.pending h3{margin:0 0 6px}.pending .photos{margin:10px -13px -13px}
 .savebar{display:none;align-items:center;position:sticky;bottom:0;z-index:8;background:var(--bg);padding:9px 0;border-top:1px solid var(--line)}.edit-mode .savebar,.review-mode .savebar{display:flex}.status{font-size:.9rem;color:var(--muted)}.status.saved{color:var(--g);font-weight:800}.status.error{color:var(--danger);font-weight:800}.card-save-status{align-self:center}.notice{padding:10px 12px;border-radius:9px;background:#fff6cf;color:#624c00;margin-bottom:12px}
 dialog{border:0;border-radius:14px;padding:0;max-width:min(92vw,760px);width:100%}dialog::backdrop{background:#0009}.dialogbody{padding:18px}.dialogbody h3{margin-top:0}.dialogactions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.browserbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.browserpath{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem;color:var(--muted);word-break:break-all}.repoimages{max-height:58vh;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px}.repoimg,.repofolder{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}.repoimg img{width:100%;height:110px;object-fit:cover}.repoimg button,.repofolder button{width:100%;border:0;border-top:1px solid var(--line);padding:7px;background:#fff;cursor:pointer;overflow:hidden;text-overflow:ellipsis}.repofolder button{border-top:0;min-height:88px;font-weight:700}.foldericon{display:block;font-size:2rem;margin-bottom:5px}
-#viewer{background:transparent;max-width:none;width:auto}#viewer img{max-width:95vw;max-height:90vh}#viewer button{position:fixed;right:16px;top:16px;border:0;border-radius:50%;font-size:24px;width:42px;height:42px}
+#viewer{position:fixed;inset:0;margin:auto;max-width:100vw;max-height:100vh;width:100vw;height:100vh;padding:12px;border-radius:0;background:#111d18ed;color:white;overflow:hidden}#viewer[open]{display:flex;align-items:center;justify-content:center}#viewer img{max-width:calc(100vw - 95px);max-height:calc(100vh - 105px);object-fit:contain}#viewer button{position:absolute;width:43px;height:43px;border:0;border-radius:50%;background:#ffffffe6;font-size:25px;cursor:pointer}#viewer .closeviewer{top:15px;right:15px}#viewer .prevviewer{top:50%;left:12px}#viewer .nextviewer{top:50%;right:12px}#viewer button:disabled{display:none}#viewer .viewercounter{position:absolute;bottom:16px;left:0;right:0;text-align:center}
 footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty{padding:24px;text-align:center;color:var(--muted)}
 @media(max-width:650px){.stats,.tools,.editgrid,.reviewgrid{grid-template-columns:1fr}.wide{grid-column:auto}.head{flex-direction:column}.photos img{height:220px}.card-save{width:100%}.savebar{padding:8px 0}}
 </style>
@@ -47,7 +47,7 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
 </section>
 <section class="tools">
   <input id="search" type="search" placeholder="Search location, notes, type or record ID…">
-  <select id="typeFilter"><option value="">All incident types</option></select>
+  <select id="typeFilter"><option value="">All incident types</option></select><button id="sortDate" class="btn" hidden>Sort by incident date (newest first)</button><button id="refreshData" class="btn">Refresh saved data</button>
 </section>
 <section id="pendingWrap" class="pendingwrap"><h3>Pending uploads</h3><div id="pendingList"></div></section>
 <section id="log"></section>
@@ -57,7 +57,7 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
 
 <dialog id="authDlg"><div class="dialogbody"><h3>Connect GitHub editing</h3><p>Enter the fine-grained repository token used by your upload shortcut. It is held in session storage for this browser tab/session only.</p><input id="tokenInput" type="password" autocomplete="off" placeholder="GitHub token" style="width:100%;padding:10px"><div class="dialogactions"><button class="btn" data-close>Cancel</button><button id="authSave" class="btn primary">Connect</button></div></div></dialog>
 <dialog id="repoDlg"><div class="dialogbody"><h3>Select an existing repository image</h3><div class="browserbar"><button id="browserUp" class="btn small">↑ Up one level</button><span id="browserPath" class="browserpath">images</span></div><div id="repoImages" class="repoimages"></div><div class="dialogactions"><button class="btn" data-close>Close</button></div></div></dialog>
-<dialog id="viewer"><button aria-label="Close">×</button><img alt="Expanded evidence photograph"></dialog>
+<dialog id="viewer"><button class="closeviewer" aria-label="Close">×</button><button class="prevviewer" aria-label="Previous photo">‹</button><img alt="Expanded evidence photograph"><button class="nextviewer" aria-label="Next photo">›</button><span class="viewercounter"></span></dialog><datalist id="locationsList"></datalist>
 <input id="fileInput" type="file" accept="image/*" multiple hidden>
 
 <script>
@@ -99,12 +99,17 @@ let reviewDrafts={};
 let queuedDeletes=[];
 let dragIndex=null;
 let browserPath='images';
+let assetVersion=Date.now(),viewerList=[],viewerAt=0,saving=false,locationsDirty=false;
+let savedLocations=['Dunfield Road – Access road leading to Beckenham Hill Station','Dunfield Road – Adjacent to St Augustine’s School playground','Dunfield Road – Outside 73–83'];
 
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const encPath=p=>p.split('/').map(encodeURIComponent).join('/');
-const imageURL=p=>p.startsWith('data:')?p:(p.startsWith('images/')?'../'+encPath(p):'../images/'+encPath(p));
+const imageURL=p=>p.startsWith('data:')?p:(p.startsWith('images/')?'../'+encPath(p):'../images/'+encPath(p))+'?v='+assetVersion;
+function sizeFor(p){const f=repoTree.find(x=>x.path==='images/'+String(p).replace(/^images\\//,''));if(!f||!Number.isFinite(f.size))return 'Size unavailable';return f.size>=1048576?(f.size/1048576).toFixed(2)+' MB':Math.round(f.size/1024)+' KB'}
+function locationList(){const vals=[...new Set([...savedLocations,...data.map(x=>x.location).filter(Boolean)])].sort();$('#locationsList').innerHTML=vals.map(v=>'<option value="'+esc(v)+'"></option>').join('')}
+async function loadLocations(){try{const r=await fetch('locations.json?v='+Date.now(),{cache:'no-store'});if(r.ok){const a=await r.json();if(Array.isArray(a))savedLocations=[...new Set([...savedLocations,...a])]}}catch(e){console.warn(e)}}
 const localISODate=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
 
 function scrollKey(m=mode){return 'doglogScrollY:'+m}
@@ -158,7 +163,7 @@ function refreshStats(){
   $('#locationCount').textContent=new Set(rows.map(i=>i.location).filter(Boolean)).size;
 }
 function followupHtml(check){
-  return `<div class="check"><b>${esc(check.date||'')}</b> — ${esc(check.status||'')}${check.note?': '+esc(check.note):''}${(check.images||[]).length?`<div class="photos">${check.images.map(p=>`<img loading="lazy" src="${imageURL(p)}" data-full="${imageURL(p)}" alt="Follow-up evidence photograph">`).join('')}</div>`:''}</div>`;
+  return `<div class="check"><b>${esc(check.date||'')}</b> — ${esc(check.status||'')}${check.note?': '+esc(check.note):''}${(check.images||[]).length?`<div class="photos">${check.images.map(p=>`<div class="photo"><img loading="lazy" src="${imageURL(p)}" data-full="${imageURL(p)}" alt="Follow-up evidence photograph">${mode==='edit'?`<span class="photosize">${esc(sizeFor(p))}</span>`:''}</div>`).join('')}</div>`:''}</div>`;
 }
 function card(i){
   const no=entryNo(i),d=reviewDraft(i.uid);
@@ -172,7 +177,7 @@ function card(i){
       <p><b>Observation:</b> ${esc(i.notes||'')}</p>
       ${(i.checks||[]).length?`<div class="reviewhistory"><b>Follow-up history</b>${i.checks.map(followupHtml).join('')}</div>`:''}
     </div>
-    ${(i.images||[]).length?`<div class="photos">${i.images.map((p,pi)=>`<div class="photo"><img loading="lazy" src="${imageURL(p)}" data-full="${imageURL(p)}" alt="Evidence photo for entry ${no}">${mode==='edit'?`<div class="photoctrl"><button class="btn small danger" data-remove-photo="${pi}" aria-label="Remove photo">×</button></div>`:''}</div>`).join('')}</div>`:''}
+    ${(i.images||[]).length?`<div class="photos">${i.images.map((p,pi)=>`<div class="photo"><img loading="lazy" src="${imageURL(p)}" data-full="${imageURL(p)}" alt="Evidence photo for entry ${no}">${mode==='edit'?`<span class="photosize">${esc(sizeFor(p))}</span>`:'' }${mode==='edit'?`<div class="photoctrl"><button class="btn small danger" data-remove-photo="${pi}" aria-label="Remove photo">×</button></div>`:''}</div>`).join('')}</div>`:''}
     <div class="reviewbox">
       <div class="reviewgrid">
         <label>Review date<input type="date" data-rdate value="${esc(d.date)}"></label>
@@ -186,7 +191,7 @@ function card(i){
       <div class="editgrid">
         <label>Date/time<input type="datetime-local" data-field="firstSeen" value="${toInputDate(i.firstSeen)}"></label>
         <label>Type<select data-field="type">${typeOptions(i.type||'')}</select></label>
-        <label class="wide">Location<input data-field="location" value="${esc(i.location||'')}"></label>
+        <label class="wide">Location (select or type)<input list="locationsList" data-field="location" value="${esc(i.location||'')}"></label>
         <label class="wide">Observation<textarea data-field="notes" rows="3">${esc(i.notes||'')}</textarea></label>
       </div>
       <div class="actions">
@@ -208,6 +213,8 @@ function render(preserveScroll=true){
   document.body.classList.toggle('edit-mode',mode==='edit');
   $$('.modebar [data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
   $('#authNotice').hidden=mode==='public';
+  $('#sortDate').hidden=mode!=='edit';
+  locationList();
   const q=$('#search').value.trim().toLowerCase(),t=$('#typeFilter').value;
   const rows=data.filter(i=>(mode==='edit'||isComplete(i))&&(!t||i.type===t)&&(!q||[i.location,i.notes,i.type,i.firstSeen,i.uid].join(' ').toLowerCase().includes(q)));
   const shown=mode==='public'?[...rows].reverse():rows;
@@ -225,6 +232,7 @@ function bindCards(){
       const field=inp.dataset.field;
       i[field]=field==='firstSeen'?inp.value.replace('T',' '):inp.value;
       if(field==='firstSeen')i.displayFirstSeen='';
+      if(field==='location'&&i.location.trim()&&!savedLocations.includes(i.location)&&confirm('Save this as a reusable location?')){savedLocations.push(i.location);locationsDirty=true;}
       markDirty();render();
     });
     el.querySelector('[data-rdate]')?.addEventListener('change',e=>reviewDraft(i.uid).date=e.target.value);
@@ -267,8 +275,11 @@ function bindCards(){
     el.ondragover=e=>{if(mode==='edit')e.preventDefault()};
     el.ondrop=e=>{if(mode!=='edit')return;e.preventDefault();if(dragIndex===null||dragIndex===idx)return;const [x]=data.splice(dragIndex,1);data.splice(idx,0,x);dragIndex=null;markDirty();render()};
   });
-  $$('.photos img').forEach(img=>img.onclick=()=>{$('#viewer img').src=img.dataset.full;$('#viewer').showModal()});
+  bindViewer();
 }
+function bindViewer(){document.querySelectorAll('.card .photos,#pendingList .photos').forEach(group=>{const imgs=[...group.querySelectorAll('img[data-full]')];imgs.forEach((img,j)=>img.onclick=()=>{viewerList=imgs.map(i=>i.dataset.full);viewerAt=j;drawViewer();$('#viewer').showModal()})})}
+function drawViewer(){const d=$('#viewer');d.querySelector('img').src=viewerList[viewerAt]||'';d.querySelector('.viewercounter').textContent=viewerList.length>1?(viewerAt+1)+' / '+viewerList.length:'';d.querySelector('.prevviewer').disabled=d.querySelector('.nextviewer').disabled=viewerList.length<2}
+function advanceViewer(n){if(viewerList.length){viewerAt=(viewerAt+n+viewerList.length)%viewerList.length;drawViewer()}}
 function move(idx,delta){
   const n=idx+delta;if(n<0||n>=data.length)return;
   [data[idx],data[n]]=[data[n],data[idx]];markDirty();render();
@@ -342,7 +353,7 @@ async function renderPending(){
     repoTree.filter(x=>x.type==='blob'&&x.path.startsWith('images/'+id+'/')).forEach(queueDelete);
     pending=pending.filter(x=>x.batchId!==id);markDirty('Batch queued for deletion');renderPending();
   });
-  $('#pendingList').querySelectorAll('.photos img').forEach(img=>img.onclick=()=>{$('#viewer img').src=img.dataset.full;$('#viewer').showModal()});
+  bindViewer();
 }
 function folderExists(path){
   return repoTree.some(x=>x.path.startsWith(path+'/'));
@@ -438,36 +449,41 @@ $('#exportCsv').onclick=exportCsv;
 async function saveAll(focusUid=null){
   const y=window.scrollY;
   if(!(await verifyToken())){pendingMode=mode;$('#authDlg').showModal();return}
+  if(saving)return;
+  saving=true;
   const st=$('#saveStatus');st.className='status';st.textContent='Saving…';
   try{
     const meta=await gh('/contents/'+DATA_PATH+'?ref=main');
     const content='window.INCIDENTS='+JSON.stringify(data)+';\n';
     await gh('/contents/'+DATA_PATH,{method:'PUT',body:JSON.stringify({message:'Update Version 2 dog fouling log',content:btoa(unescape(encodeURIComponent(content))),sha:meta.sha})});
-    let failedDeletes=0;
+    if(locationsDirty){const locationMeta=await gh('/contents/v2/locations.json?ref=main');await gh('/contents/v2/locations.json',{method:'PUT',body:JSON.stringify({message:'Update saved location choices',content:btoa(unescape(encodeURIComponent(JSON.stringify(savedLocations,null,2)+'\n'))),sha:locationMeta.sha})});locationsDirty=false;}
+    const failedDeletes=[];
     for(const d of queuedDeletes){
       try{
         let sha=d.sha;
         if(!sha){const meta=await gh('/contents/'+d.path+'?ref=main');sha=meta.sha}
         await gh('/contents/'+d.path,{method:'DELETE',body:JSON.stringify({message:'Delete dog log file',sha})});
-      }catch(e){console.warn('Delete failed',d.path,e);failedDeletes++}
+      }catch(e){console.warn('Delete failed',d.path,e);failedDeletes.push(d)}
     }
-    queuedDeletes=[];
-    dirty=false;repoTree=[];pending=[];
+    queuedDeletes=failedDeletes;
+    dirty=failedDeletes.length>0;repoTree=[];pending=[];assetVersion=Date.now();
     lastSavedUid=focusUid;
-    st.textContent=failedDeletes?`✓ Log saved; ${failedDeletes} file deletion${failedDeletes===1?'':'s'} failed`:'✓ Saved to GitHub';
-    st.className=failedDeletes?'status error':'status saved';
+    st.textContent=failedDeletes.length?`Log saved; ${failedDeletes.length} file deletion(s) failed — queued to retry`:'✓ Saved to GitHub';
+    st.className=failedDeletes.length?'status error':'status saved';
     if(mode==='edit')await loadPending();
     render(false);
     requestAnimationFrame(()=>window.scrollTo(0,y));
   }catch(e){
-    st.textContent='Save failed';st.className='status error';alert('Save failed: '+e.message);
-  }
+    st.textContent='Save failed — changes retained';st.className='status error';alert('Save failed: '+e.message);
+  }finally{saving=false}
 }
 $('#saveAll').onclick=saveAll;
 $$('.modebar [data-mode]').forEach(b=>b.onclick=()=>requestMode(b.dataset.mode));
 $('#search').oninput=render;$('#typeFilter').onchange=render;
+$('#sortDate').onclick=()=>{if(!confirm('Sort all posts by recorded incident date/time, newest first? Entry numbers will change after saving; permanent IDs will not.'))return;const d=x=>{const t=Date.parse(String(x.firstSeen||'').replace(' ','T'));return Number.isFinite(t)?t:-Infinity};data.sort((a,b)=>d(b)-d(a));markDirty('Sorted by incident date · save to keep order');render()};
+$('#refreshData').onclick=async()=>{if(dirty&&!confirm('Discard unsaved edits and reload the saved log?'))return;const b=$('#refreshData');b.disabled=true;try{if(token){const j=await gh('/contents/'+DATA_PATH+'?ref=main');const bin=atob(j.content.replace(/\\s/g,''));const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));const raw=new TextDecoder().decode(bytes);data=normaliseData(JSON.parse(raw.replace(/^window\\.INCIDENTS\\s*=\\s*/,'').replace(/;\\s*$/,'')));await loadPending()}else await loadInitialData();assetVersion=Date.now();queuedDeletes=[];dirty=false;render(false)}catch(e){alert('Refresh failed: '+e.message)}finally{b.disabled=false}};
 TYPES.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;$('#typeFilter').appendChild(o)});
-$('#viewer button').onclick=()=>$('#viewer').close();
+$('#viewer .closeviewer').onclick=()=>$('#viewer').close();$('#viewer .prevviewer').onclick=()=>advanceViewer(-1);$('#viewer .nextviewer').onclick=()=>advanceViewer(1);document.addEventListener('keydown',e=>{if(!$('#viewer').open)return;if(e.key==='ArrowLeft')advanceViewer(-1);if(e.key==='ArrowRight')advanceViewer(1)});let touchStart=null;$('#viewer').addEventListener('touchstart',e=>{touchStart=e.changedTouches[0]?.clientX},{passive:true});$('#viewer').addEventListener('touchend',e=>{if(touchStart==null)return;const dx=e.changedTouches[0]?.clientX-touchStart;if(Math.abs(dx)>45)advanceViewer(dx<0?1:-1);touchStart=null},{passive:true});
 $('#viewer').onclick=e=>{if(e.target===$('#viewer'))$('#viewer').close()};
 window.addEventListener('pagehide',()=>{saveScrollPosition();persistMode()});
 window.addEventListener('beforeunload',e=>{saveScrollPosition();persistMode();if(dirty){e.preventDefault();e.returnValue=''}});
@@ -479,7 +495,7 @@ if(ADMIN){
   $('.savebar').style.display='none';
   $('#authNotice').hidden=true;
 }
-loadInitialData().then(async()=>{
+Promise.all([loadInitialData(),loadLocations()]).then(async()=>{
   render(false);
   if(ADMIN&&INITIAL_MODE!=='public')await requestMode(INITIAL_MODE);
   else{mode='public';persistMode();restoreScrollPosition(mode)}
