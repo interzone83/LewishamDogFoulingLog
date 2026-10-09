@@ -460,9 +460,8 @@ async function saveAll(focusUid=null){
     const failedDeletes=[];
     for(const d of queuedDeletes){
       try{
-        let sha=d.sha;
-        if(!sha){const meta=await gh('/contents/'+d.path+'?ref=main');sha=meta.sha}
-        await gh('/contents/'+d.path,{method:'DELETE',body:JSON.stringify({message:'Delete dog log file',sha})});
+        const meta=await gh('/contents/'+d.path+'?ref=main');
+        await gh('/contents/'+d.path,{method:'DELETE',body:JSON.stringify({message:'Delete dog log file',sha:meta.sha})});
       }catch(e){console.warn('Delete failed',d.path,e);failedDeletes.push(d)}
     }
     queuedDeletes=failedDeletes;
