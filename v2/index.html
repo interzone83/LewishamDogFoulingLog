@@ -245,7 +245,7 @@ function refreshStats(){
   $('#statIncidents').hidden=!adminMode&&!publicSettings.showIncidentCount;
   $('#statPhotos').hidden=!adminMode&&!publicSettings.showPhotoCount;
   $('#statLocations').hidden=!adminMode&&!publicSettings.showLocationCount;
-  $('#stats').hidden=$('#stats .stat').every(el=>el.hidden);
+  document.getElementById('stats').hidden=Array.from(document.querySelectorAll('#stats .stat')).every(el=>el.hidden);
 }
 function followupHtml(check){
   return `<div class="check"><b>${esc(check.date||'')}</b> — ${esc(check.status||'')}${check.note?': '+esc(check.note):''}${(check.images||[]).length?`<div class="photos">${check.images.map(p=>`<div class="photo"><img loading="lazy" src="${imageURL(p)}" data-full="${imageURL(p)}" alt="Follow-up evidence photograph">${mode==='edit'?`<span class="photosize">${esc(sizeFor(p))}</span>`:''}</div>`).join('')}</div>`:''}</div>`;
