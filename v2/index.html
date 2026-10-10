@@ -47,7 +47,9 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
 </section>
 <section class="tools">
   <input id="search" type="search" placeholder="Search location, notes, type or record ID…">
-  <select id="typeFilter"><option value="">All incident types</option></select><button id="sortDate" class="btn" hidden>Sort by incident date (newest first)</button><button id="refreshData" class="btn">Refresh saved data</button>
+  <select id="typeFilter"><option value="">All incident types</option></select>
+  <select id="dateOrder" aria-label="Sort incidents by main incident date"><option value="newest">Incident date: Newest first</option><option value="oldest">Incident date: Oldest first</option></select>
+  <button id="refreshData" class="btn">Refresh saved data</button>
 </section>
 <section id="pendingWrap" class="pendingwrap"><h3>Pending uploads</h3><div id="pendingList"></div></section>
 <section id="log"></section>
@@ -97,7 +99,7 @@ let activePhotoEntry=null;
 let activeFollowupUid=null;
 let reviewDrafts={};
 let queuedDeletes=[];
-let dragIndex=null;
+let dateOrder=sessionStorage.getItem('doglogDateOrder')==='oldest'?'oldest':'newest';
 let browserPath='images';
 let assetVersion=Date.now(),viewerList=[],viewerAt=0,saving=false,locationsDirty=false;
 let savedLocations=['Dunfield Road – Access road leading to Beckenham Hill Station','Dunfield Road – Adjacent to St Augustine’s School playground','Dunfield Road – Outside 73–83'];
@@ -137,6 +139,26 @@ function markDirty(msg='Unsaved changes'){
 }
 function isComplete(i){return !!(i.firstSeen&&i.location&&i.type&&i.notes)}
 function entryNo(i){return data.indexOf(i)+1}
+// Sort only the displayed cards; never mutate the order of saved incident records.
+function incidentTimestamp(i){
+  const m=String(i.firstSeen||'').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+  return m?Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0)):null;
+}
+function byIncidentDate(rows){
+  return [...rows].sort((a,b)=>{
+    const ta=incidentTimestamp(a),tb=incidentTimestamp(b);
+    if(ta===null&&tb===null)return data.indexOf(a)-data.indexOf(b);
+    if(ta===null)return 1;
+    if(tb===null)return -1;
+    const difference=dateOrder==='oldest'?ta-tb:tb-ta;
+    return difference||data.indexOf(a)-data.indexOf(b);
+  });
+}
+// A DOGLOG ID represents the upload time in the phone's local time zone.
+function uploadTimeFromID(id){
+  const m=String(id||'').match(/^DOGLOG-(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})$/i);
+  return m?`${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}`:'';
+}
 function displayDate(i){
   if(i.displayFirstSeen)return i.displayFirstSeen;
   const m=String(i.firstSeen||'').match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
@@ -167,7 +189,7 @@ function followupHtml(check){
 }
 function card(i){
   const no=entryNo(i),d=reviewDraft(i.uid);
-  return `<article class="card" data-index="${data.indexOf(i)}" data-uid="${esc(i.uid)}" draggable="${mode==='edit'}">
+  return `<article class="card" data-index="${data.indexOf(i)}" data-uid="${esc(i.uid)}">
     <div class="head">
       <div><div class="date">${esc(displayDate(i))}</div><h2>${esc(i.location||'Location pending')}</h2><div class="uid">Record ID: ${esc(i.uid)}</div></div>
       <div><span class="badge">${esc(i.type||'Pending type')}</span><div style="margin-top:7px;text-align:right">Entry #${String(no).padStart(2,'0')}</div></div>
@@ -198,9 +220,6 @@ function card(i){
         <button class="btn" data-existing-photo>Add existing photo</button>
         <button class="btn" data-upload-photo>Upload new photo</button>
         <button class="btn danger" data-delete-post>Delete post</button>
-        <button class="btn small" data-move-up>↑ Move</button>
-        <button class="btn small" data-move-down>↓ Move</button>
-        <span class="btn small draghandle">Drag to reorder</span>
         <button class="btn primary card-save" data-card-save>Save changes to GitHub</button>
         <span class="status saved card-save-status">${lastSavedUid===i.uid&&!dirty?'✓ Saved to GitHub':''}</span>
       </div>
@@ -213,11 +232,11 @@ function render(preserveScroll=true){
   document.body.classList.toggle('edit-mode',mode==='edit');
   $$('.modebar [data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
   $('#authNotice').hidden=mode==='public';
-  $('#sortDate').hidden=mode!=='edit';
+  $('#dateOrder').value=dateOrder;
   locationList();
   const q=$('#search').value.trim().toLowerCase(),t=$('#typeFilter').value;
   const rows=data.filter(i=>(mode==='edit'||isComplete(i))&&(!t||i.type===t)&&(!q||[i.location,i.notes,i.type,i.firstSeen,i.uid].join(' ').toLowerCase().includes(q)));
-  const shown=mode==='public'?[...rows].reverse():rows;
+  const shown=byIncidentDate(rows);
   $('#log').innerHTML=shown.map(card).join('');
   $('#empty').hidden=shown.length>0;
   refreshStats();
@@ -268,22 +287,12 @@ function bindCards(){
       data.splice(idx,1);delete reviewDrafts[i.uid];markDirty();render();
     });
     el.querySelectorAll('[data-card-save]').forEach(b=>b.addEventListener('click',()=>saveAll(i.uid)));
-    el.querySelector('[data-move-up]')?.addEventListener('click',()=>move(idx,-1));
-    el.querySelector('[data-move-down]')?.addEventListener('click',()=>move(idx,1));
-    el.ondragstart=e=>{if(mode!=='edit')return;e.dataTransfer.effectAllowed='move';dragIndex=idx;el.classList.add('dragging')};
-    el.ondragend=()=>el.classList.remove('dragging');
-    el.ondragover=e=>{if(mode==='edit')e.preventDefault()};
-    el.ondrop=e=>{if(mode!=='edit')return;e.preventDefault();if(dragIndex===null||dragIndex===idx)return;const [x]=data.splice(dragIndex,1);data.splice(idx,0,x);dragIndex=null;markDirty();render()};
   });
   bindViewer();
 }
 function bindViewer(){document.querySelectorAll('.card .photos,#pendingList .photos').forEach(group=>{const imgs=[...group.querySelectorAll('img[data-full]')];imgs.forEach((img,j)=>img.onclick=()=>{viewerList=imgs.map(i=>i.dataset.full);viewerAt=j;drawViewer();$('#viewer').showModal()})})}
 function drawViewer(){const d=$('#viewer');d.querySelector('img').src=viewerList[viewerAt]||'';d.querySelector('.viewercounter').textContent=viewerList.length>1?(viewerAt+1)+' / '+viewerList.length:'';d.querySelector('.prevviewer').disabled=d.querySelector('.nextviewer').disabled=viewerList.length<2}
 function advanceViewer(n){if(viewerList.length){viewerAt=(viewerAt+n+viewerList.length)%viewerList.length;drawViewer()}}
-function move(idx,delta){
-  const n=idx+delta;if(n<0||n>=data.length)return;
-  [data[idx],data[n]]=[data[n],data[idx]];markDirty();render();
-}
 function queueDelete(item){
   if(!item?.path)return;
   if(!queuedDeletes.some(x=>x.path===item.path))queuedDeletes.push({path:item.path,sha:item.sha||null});
@@ -345,8 +354,18 @@ async function renderPending(){
   $('#pendingList').innerHTML=pending.length?pending.map(b=>`<div class="pending"><h3>${esc(b.batchId)}</h3><div>${b.images.length} photo${b.images.length===1?'':'s'}</div><div class="actions"><button class="btn primary small" data-create-batch="${esc(b.batchId)}">Create entry from batch</button><button class="btn danger small" data-delete-batch="${esc(b.batchId)}">Delete batch</button></div>${b.images.length?`<div class="photos">${b.images.map(p=>`<img loading="lazy" src="../${encPath(p)}" data-full="../${encPath(p)}" alt="Pending uploaded photograph">`).join('')}</div>`:''}</div>`).join(''):'<div class="status">No unattached pending batches found.</div>';
   $$('[data-create-batch]').forEach(b=>b.onclick=()=>{
     const pb=pending.find(x=>x.batchId===b.dataset.createBatch);if(!pb)return;
-    data.push({id:Math.max(0,...data.map(x=>Number(x.id)||0))+1,uid:pb.batchId,firstSeen:'',displayFirstSeen:'',photoRecorded:'',location:'',type:'',notes:'',images:pb.images.map(p=>p.replace(/^images\//,'')),checks:[]});
-    pending=pending.filter(x=>x!==pb);markDirty('Batch converted · add details, then save');render();
+    data.push({id:Math.max(0,...data.map(x=>Number(x.id)||0))+1,uid:pb.batchId,firstSeen:uploadTimeFromID(pb.batchId),displayFirstSeen:'',photoRecorded:'',location:'',type:'',notes:'',images:pb.images.map(p=>p.replace(/^images\//,'')),checks:[]});
+    pending=pending.filter(x=>x!==pb);
+    markDirty('Batch converted · check date, add details, then save');
+    render(false);
+    // The new entry may appear anywhere in the chronological list.
+    // Wait until rendering finishes, then scroll to and focus its Location field.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const target=[...document.querySelectorAll('#log .card')].find(el=>el.dataset.uid===pb.batchId);
+      if(!target)return;
+      target.scrollIntoView({behavior:'smooth',block:'center'});
+      target.querySelector('[data-field="location"]')?.focus({preventScroll:true});
+    }));
   });
   $$('[data-delete-batch]').forEach(b=>b.onclick=()=>{
     const id=b.dataset.deleteBatch;if(!confirm('Delete this pending batch and all of its GitHub files when you save?'))return;
@@ -479,7 +498,11 @@ async function saveAll(focusUid=null){
 $('#saveAll').onclick=saveAll;
 $$('.modebar [data-mode]').forEach(b=>b.onclick=()=>requestMode(b.dataset.mode));
 $('#search').oninput=render;$('#typeFilter').onchange=render;
-$('#sortDate').onclick=()=>{if(!confirm('Sort all posts by recorded incident date/time, newest first? Entry numbers will change after saving; permanent IDs will not.'))return;const d=x=>{const t=Date.parse(String(x.firstSeen||'').replace(' ','T'));return Number.isFinite(t)?t:-Infinity};data.sort((a,b)=>d(b)-d(a));markDirty('Sorted by incident date · save to keep order');render()};
+$('#dateOrder').onchange=e=>{
+  dateOrder=e.target.value==='oldest'?'oldest':'newest';
+  sessionStorage.setItem('doglogDateOrder',dateOrder);
+  render();
+};
 $('#refreshData').onclick=async()=>{if(dirty&&!confirm('Discard unsaved edits and reload saved data?'))return;const b=$('#refreshData');b.disabled=true;try{if(token){const j=await gh('/contents/'+DATA_PATH+'?ref=main');const bin=atob(j.content.replaceAll(String.fromCharCode(10),'').replaceAll(String.fromCharCode(13),''));const raw=new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0)));const cleaned=raw.substring(raw.indexOf('=')+1).trim().replace(/;$/,'');data=normaliseData(JSON.parse(cleaned));await loadPending()}else await loadInitialData();assetVersion=Date.now();queuedDeletes=[];dirty=false;render(false)}catch(e){alert('Refresh failed: '+e.message)}finally{b.disabled=false}};
 TYPES.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;$('#typeFilter').appendChild(o)});
 $('#viewer .closeviewer').onclick=()=>$('#viewer').close();$('#viewer .prevviewer').onclick=()=>advanceViewer(-1);$('#viewer .nextviewer').onclick=()=>advanceViewer(1);document.addEventListener('keydown',e=>{if(!$('#viewer').open)return;if(e.key==='ArrowLeft')advanceViewer(-1);if(e.key==='ArrowRight')advanceViewer(1)});let touchStart=null;$('#viewer').addEventListener('touchstart',e=>{touchStart=e.changedTouches[0]?.clientX},{passive:true});$('#viewer').addEventListener('touchend',e=>{if(touchStart==null)return;const dx=e.changedTouches[0]?.clientX-touchStart;if(Math.abs(dx)>45)advanceViewer(dx<0?1:-1);touchStart=null},{passive:true});
