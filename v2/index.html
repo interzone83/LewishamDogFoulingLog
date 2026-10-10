@@ -621,7 +621,7 @@ const isGitHubConflict=e=>/\b409\b|does not match/i.test(String(e?.message||e));
 async function commitSafely(path,content,baseline,expected,parseRemote,message){
   for(let attempt=0;attempt<4;attempt++){
     // A fresh GET and per-file SHA are needed for each attempt.
-    const meta=await gh('/contents/'+path+'?ref=main&fresh='+Date.now()+'-'+attempt,{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
+    const meta=await gh('/contents/'+path+'?ref=main&fresh='+Date.now()+'-'+attempt,{cache:'no-store'});
     const remote=parseRemote(decodedGitHubContent(meta.content));
     if(remote===expected)return 'already';
     if(remote!==baseline){
