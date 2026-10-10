@@ -127,7 +127,60 @@ let queuedDeletes=[];
 let dateOrder=sessionStorage.getItem('doglogDateOrder')==='oldest'?'oldest':'newest';
 let browserPath='images';
 let assetVersion=Date.now(),viewerList=[],viewerAt=0,saving=false,locationsDirty=false;
-let savedLocations=['Dunfield Road – Access road leading to Beckenham Hill Station','Dunfield Road – Adjacent to St Augustine’s School playground','Dunfield Road – Outside 73–83'];
+const INITIAL_LOCATIONS=['Dunfield Road – Access road leading to Beckenham Hill Station','Dunfield Road – Adjacent to St Augustine’s School playground','Dunfield Road – Outside 73–83'];
+let savedLocations=[...INITIAL_LOCATIONS];
+const RECOVERY_KEY='LewishamDogLogV2Recovery_v1';
+let baselineIncidents=null,baselineSettings=null,baselineLocations=null;
+function takeBaselines(){
+  baselineIncidents=JSON.stringify(data);
+  baselineSettings=JSON.stringify(publicSettings);
+  baselineLocations=JSON.stringify(savedLocations);
+}
+function recoveryDraft(){
+  if(!ADMIN||!dirty)return false;
+  try{
+    localStorage.setItem(RECOVERY_KEY,JSON.stringify({
+      format:1,updatedAt:new Date().toISOString(),
+      data,publicSettings,savedLocations,queuedDeletes,reviewDrafts,
+      incidentsDirty,settingsDirty,locationsDirty,
+      baselineIncidents,baselineSettings,baselineLocations
+    }));
+    return true;
+  }catch(e){
+    console.warn('Could not store a local recovery draft',e);
+    return false;
+  }
+}
+function clearRecoveryDraft(){
+  if(!ADMIN)return;
+  try{localStorage.removeItem(RECOVERY_KEY)}
+  catch(e){console.warn('Could not clear recovery draft',e)}
+}
+function offerDraftRecovery(){
+  if(!ADMIN)return false;
+  let draft;
+  try{draft=JSON.parse(localStorage.getItem(RECOVERY_KEY)||'null')}
+  catch(e){console.warn('Could not read recovery draft',e);return false}
+  if(!draft||draft.format!==1||!Array.isArray(draft.data)||typeof draft.baselineIncidents!=='string')return false;
+  const when=draft.updatedAt?new Date(draft.updatedAt).toLocaleString('en-GB'):'an earlier session';
+  if(!confirm('An unsaved Dog Log editing draft from '+when+' is stored on this device. Restore those edits?\\n\\nCancel leaves that recovery copy available, but starting new edits may replace it.'))return false;
+  data=normaliseData(draft.data);
+  publicSettings=draft.publicSettings&&typeof draft.publicSettings==='object'?{...DEFAULT_PUBLIC_SETTINGS,...draft.publicSettings}:publicSettings;
+  savedLocations=Array.isArray(draft.savedLocations)?[...new Set([...INITIAL_LOCATIONS,...draft.savedLocations])]:savedLocations;
+  queuedDeletes=Array.isArray(draft.queuedDeletes)?draft.queuedDeletes.filter(x=>x&&typeof x.path==='string'&&x.path.startsWith('images/')):[];
+  reviewDrafts=draft.reviewDrafts&&typeof draft.reviewDrafts==='object'?draft.reviewDrafts:{};
+  incidentsDirty=!!draft.incidentsDirty;
+  settingsDirty=!!draft.settingsDirty;
+  locationsDirty=!!draft.locationsDirty;
+  baselineIncidents=draft.baselineIncidents;
+  baselineSettings=typeof draft.baselineSettings==='string'?draft.baselineSettings:baselineSettings;
+  baselineLocations=typeof draft.baselineLocations==='string'?draft.baselineLocations:baselineLocations;
+  dirty=true;
+  lastSavedUid=null;
+  $('#saveStatus').textContent='Unsaved recovery draft restored · review and save';
+  $('#saveStatus').className='status';
+  return true;
+}
 
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -167,6 +220,7 @@ function markDirty(msg='Unsaved changes',changesIncidents=true){
   dirty=true;
   lastSavedUid=null;
   const s=$('#saveStatus'); if(s){s.textContent=msg;s.className='status'}
+  if(ADMIN&&dirty&&!recoveryDraft()&&s){s.textContent=msg+' · local recovery unavailable'}
 }
 function isComplete(i){return !!(i.firstSeen&&i.location&&i.type&&i.notes)}
 function searchable(v){
@@ -319,12 +373,22 @@ function render(preserveScroll=true){
 function bindCards(){
   $$('.card').forEach(el=>{
     const idx=+el.dataset.index,i=data[idx];
-    el.querySelectorAll('[data-field]').forEach(inp=>inp.onchange=()=>{
+    el.querySelectorAll('[data-field]').forEach(inp=>{
+      inp.addEventListener('input',()=>{
+        const field=inp.dataset.field,value=field==='firstSeen'?inp.value.replace('T',' '):inp.value;
+        if(i[field]!==value){
+          i[field]=value;
+          if(field==='firstSeen')i.displayFirstSeen='';
+          markDirty('Unsaved edits · recovery copy updated');
+        }
+      });
+      inp.onchange=()=>{
       const field=inp.dataset.field;
       i[field]=field==='firstSeen'?inp.value.replace('T',' '):inp.value;
       if(field==='firstSeen')i.displayFirstSeen='';
       if(field==='location'&&i.location.trim()&&!savedLocations.includes(i.location)&&confirm('Save this as a reusable location?')){savedLocations.push(i.location);locationsDirty=true;}
       markDirty();render();
+      };
     });
     el.querySelector('[data-rdate]')?.addEventListener('change',e=>reviewDraft(i.uid).date=e.target.value);
     el.querySelector('[data-rstatus]')?.addEventListener('change',e=>reviewDraft(i.uid).status=e.target.value);
@@ -416,7 +480,7 @@ async function loadPending(){
   await ensureTree(true);
   const known=new Set(data.map(i=>i.uid));
   const folders=[...new Set(repoTree.filter(x=>/^images\/DOGLOG-[^/]+\/batch\.json$/i.test(x.path)).map(x=>x.path.split('/')[1]))];
-  pending=folders.filter(id=>!known.has(id)).map(batchId=>({
+  pending=folders.filter(id=>!known.has(id)&&!queuedDeletes.some(x=>x.path==='images/'+id+'/batch.json')).map(batchId=>({
     batchId,
     images:repoTree.filter(x=>x.path.startsWith('images/'+batchId+'/')&&/\.(jpe?g|png|webp)$/i.test(x.path)).map(x=>x.path)
   }));
@@ -537,45 +601,114 @@ function exportCsv(){
 }
 $('#exportCsv').onclick=exportCsv;
 
+
+function decodedGitHubContent(base64){
+  const compact=String(base64||'').replace(/\\s/g,'');
+  return new TextDecoder().decode(Uint8Array.from(atob(compact),c=>c.charCodeAt(0)));
+}
+function incidentJSON(text){
+  return JSON.stringify(normaliseData(JSON.parse(String(text).trim().replace(/^window\\.INCIDENTS\\s*=\\s*/,'').replace(/;\\s*$/,''))));
+}
+function settingsJSON(text){
+  return JSON.stringify({...DEFAULT_PUBLIC_SETTINGS,...JSON.parse(text)});
+}
+function locationsJSON(text){
+  const a=JSON.parse(text);
+  if(!Array.isArray(a))throw new Error('Saved locations are not an array');
+  return JSON.stringify([...new Set([...INITIAL_LOCATIONS,...a])]);
+}
+const isGitHubConflict=e=>/\\b409\\b|does not match/i.test(String(e?.message||e));
+async function commitSafely(path,content,baseline,expected,parseRemote,message){
+  for(let attempt=0;attempt<4;attempt++){
+    // A fresh GET and per-file SHA are needed for each attempt.
+    const meta=await gh('/contents/'+path+'?ref=main&fresh='+Date.now()+'-'+attempt,{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
+    const remote=parseRemote(decodedGitHubContent(meta.content));
+    if(remote===expected)return 'already';
+    if(remote!==baseline){
+      throw new Error('GitHub has newer changes in '+path+' from another save or editor. Nothing was overwritten. Your unsaved edits remain here and in the local recovery draft. Do not refresh this page; reconcile the newer changes before saving again.');
+    }
+    try{
+      await gh('/contents/'+path,{
+        method:'PUT',
+        body:JSON.stringify({message,content:btoa(unescape(encodeURIComponent(content))),sha:meta.sha})
+      });
+      return 'saved';
+    }catch(e){
+      if(!isGitHubConflict(e))throw e;
+      if(attempt===3)throw new Error('GitHub still reports a 409 version conflict after automatic retries. Your edits have been kept. Wait a moment and try Save again, without refreshing.');
+      await new Promise(resolve=>setTimeout(resolve,400*(attempt+1)));
+    }
+  }
+}
 async function saveAll(focusUid=null){
   const y=window.scrollY;
-  if(!(await verifyToken())){pendingMode=mode;$('#authDlg').showModal();return}
   if(saving)return;
+  if(!(await verifyToken())){pendingMode=mode;$('#authDlg').showModal();return}
   saving=true;
   const st=$('#saveStatus');st.className='status';st.textContent='Saving…';
+  recoveryDraft();
   try{
     if(incidentsDirty){
-      const meta=await gh('/contents/'+DATA_PATH+'?ref=main');
-      const content='window.INCIDENTS='+JSON.stringify(data)+';\n';
-      await gh('/contents/'+DATA_PATH,{method:'PUT',body:JSON.stringify({message:'Update Version 2 dog fouling log',content:btoa(unescape(encodeURIComponent(content))),sha:meta.sha})});
-      incidentsDirty=false;
+      const snapshot=JSON.stringify(data);
+      await commitSafely(DATA_PATH,'window.INCIDENTS='+snapshot+';\\n',
+        baselineIncidents,snapshot,incidentJSON,'Update Version 2 dog fouling log');
+      baselineIncidents=snapshot;
+      incidentsDirty=JSON.stringify(data)!==snapshot;
+      dirty=incidentsDirty||settingsDirty||locationsDirty||queuedDeletes.length>0;
+      if(dirty)recoveryDraft();
     }
     if(settingsDirty){
-      const meta=await gh('/contents/v2/settings.json?ref=main');
-      const content=JSON.stringify(publicSettings,null,2)+'\n';
-      await gh('/contents/v2/settings.json',{method:'PUT',body:JSON.stringify({message:'Update V2 public display settings',content:btoa(unescape(encodeURIComponent(content))),sha:meta.sha})});
-      settingsDirty=false;
+      const snapshot=JSON.stringify(publicSettings);
+      await commitSafely('v2/settings.json',JSON.stringify(publicSettings,null,2)+'\\n',
+        baselineSettings,snapshot,settingsJSON,'Update V2 public display settings');
+      baselineSettings=snapshot;
+      settingsDirty=JSON.stringify(publicSettings)!==snapshot;
+      dirty=incidentsDirty||settingsDirty||locationsDirty||queuedDeletes.length>0;
+      if(dirty)recoveryDraft();
     }
-    if(locationsDirty){const locationMeta=await gh('/contents/v2/locations.json?ref=main');await gh('/contents/v2/locations.json',{method:'PUT',body:JSON.stringify({message:'Update saved location choices',content:btoa(unescape(encodeURIComponent(JSON.stringify(savedLocations,null,2)+'\n'))),sha:locationMeta.sha})});locationsDirty=false;}
+    if(locationsDirty){
+      const snapshot=JSON.stringify(savedLocations);
+      await commitSafely('v2/locations.json',JSON.stringify(savedLocations,null,2)+'\\n',
+        baselineLocations,snapshot,locationsJSON,'Update saved location choices');
+      baselineLocations=snapshot;
+      locationsDirty=JSON.stringify(savedLocations)!==snapshot;
+      dirty=incidentsDirty||settingsDirty||locationsDirty||queuedDeletes.length>0;
+      if(dirty)recoveryDraft();
+    }
     const failedDeletes=[];
-    for(const d of queuedDeletes){
+    for(const file of queuedDeletes){
       try{
-        const meta=await gh('/contents/'+d.path+'?ref=main');
-        await gh('/contents/'+d.path,{method:'DELETE',body:JSON.stringify({message:'Delete dog log file',sha:meta.sha})});
-      }catch(e){console.warn('Delete failed',d.path,e);failedDeletes.push(d)}
+        const meta=await gh('/contents/'+file.path+'?ref=main&fresh='+Date.now(),{cache:'no-store'});
+        await gh('/contents/'+file.path,{method:'DELETE',body:JSON.stringify({message:'Delete dog log file',sha:meta.sha})});
+      }catch(e){
+        // A file already missing is a successful deletion, not a retry failure.
+        if(!/\\b404\\b/.test(String(e?.message||e)))failedDeletes.push(file);
+      }
     }
     queuedDeletes=failedDeletes;
-    dirty=incidentsDirty||settingsDirty||locationsDirty||failedDeletes.length>0;repoTree=[];pending=[];assetVersion=Date.now();
+    dirty=incidentsDirty||settingsDirty||locationsDirty||queuedDeletes.length>0;
+    repoTree=[];pending=[];assetVersion=Date.now();
     lastSavedUid=focusUid;
-    st.textContent=failedDeletes.length?`Log saved; ${failedDeletes.length} file deletion(s) failed — queued to retry`:'✓ Saved to GitHub';
-    st.className=failedDeletes.length?'status error':'status saved';
-    if(mode==='edit')await loadPending();
+    if(dirty)recoveryDraft();else clearRecoveryDraft();
+    st.textContent=failedDeletes.length?
+      'Log saved; '+failedDeletes.length+' file deletion(s) could not finish. They remain queued to retry.':
+      dirty?'Some newer edits still need saving':'✓ Saved to GitHub';
+    st.className=dirty?'status error':'status saved';
+    if(mode==='edit'){
+      try{await loadPending()}
+      catch(e){console.warn('Saved, but pending batches could not refresh',e);st.textContent+=' · Pending list refresh failed';st.className='status error'}
+    }
     render(false);
     requestAnimationFrame(()=>window.scrollTo(0,y));
   }catch(e){
     dirty=incidentsDirty||settingsDirty||locationsDirty||queuedDeletes.length>0;
-    st.textContent='Save incomplete — remaining changes retained';st.className='status error';alert('Save failed: '+e.message);
-  }finally{saving=false}
+    if(dirty)recoveryDraft();
+    st.textContent='Save incomplete · edits retained in this browser';
+    st.className='status error';
+    alert('Save incomplete: '+e.message);
+  }finally{
+    saving=false;
+  }
 }
 $('#saveAll').onclick=saveAll;
 $$('.modebar [data-mode]').forEach(b=>b.onclick=()=>requestMode(b.dataset.mode));
@@ -598,12 +731,32 @@ $('#dateOrder').onchange=e=>{
   sessionStorage.setItem('doglogDateOrder',dateOrder);
   render();
 };
-$('#refreshData').onclick=async()=>{if(dirty&&!confirm('Discard unsaved edits and reload saved data?'))return;const b=$('#refreshData');b.disabled=true;try{if(token){const j=await gh('/contents/'+DATA_PATH+'?ref=main');const bin=atob(j.content.replaceAll(String.fromCharCode(10),'').replaceAll(String.fromCharCode(13),''));const raw=new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0)));const cleaned=raw.substring(raw.indexOf('=')+1).trim().replace(/;$/,'');data=normaliseData(JSON.parse(cleaned));await loadPending()}else await loadInitialData();assetVersion=Date.now();queuedDeletes=[];dirty=false;incidentsDirty=false;settingsDirty=false;await loadPublicSettings();render(false)}catch(e){alert('Refresh failed: '+e.message)}finally{b.disabled=false}};
+$('#refreshData').onclick=async()=>{
+  if(dirty&&!confirm('Discard all unsaved edits and the local recovery draft, then reload the saved log?'))return;
+  const b=$('#refreshData');b.disabled=true;
+  try{
+    // When connected, read the current GitHub file rather than possibly delayed Pages content.
+    if(token){
+      const j=await gh('/contents/'+DATA_PATH+'?ref=main&fresh='+Date.now(),{cache:'no-store'});
+      data=normaliseData(JSON.parse(incidentJSON(decodedGitHubContent(j.content))));
+    }else await loadInitialData();
+    queuedDeletes=[];dirty=false;incidentsDirty=false;settingsDirty=false;locationsDirty=false;
+    reviewDrafts={};
+    await Promise.all([loadPublicSettings(),loadLocations()]);
+    takeBaselines();
+    clearRecoveryDraft();
+    assetVersion=Date.now();
+    if(mode==='edit')await loadPending();
+    render(false);
+    $('#saveStatus').textContent='Refreshed saved log';
+  }catch(e){alert('Refresh failed: '+e.message)}
+  finally{b.disabled=false}
+};
 TYPES.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;$('#typeFilter').appendChild(o)});
 $('#viewer .closeviewer').onclick=()=>$('#viewer').close();$('#viewer .prevviewer').onclick=()=>advanceViewer(-1);$('#viewer .nextviewer').onclick=()=>advanceViewer(1);document.addEventListener('keydown',e=>{if(!$('#viewer').open)return;if(e.key==='ArrowLeft')advanceViewer(-1);if(e.key==='ArrowRight')advanceViewer(1)});let touchStart=null;$('#viewer').addEventListener('touchstart',e=>{touchStart=e.changedTouches[0]?.clientX},{passive:true});$('#viewer').addEventListener('touchend',e=>{if(touchStart==null)return;const dx=e.changedTouches[0]?.clientX-touchStart;if(Math.abs(dx)>45)advanceViewer(dx<0?1:-1);touchStart=null},{passive:true});
 $('#viewer').onclick=e=>{if(e.target===$('#viewer'))$('#viewer').close()};
-window.addEventListener('pagehide',()=>{saveScrollPosition();persistMode()});
-window.addEventListener('beforeunload',e=>{saveScrollPosition();persistMode();if(dirty){e.preventDefault();e.returnValue=''}});
+window.addEventListener('pagehide',()=>{if(dirty)recoveryDraft();saveScrollPosition();persistMode()});
+window.addEventListener('beforeunload',e=>{if(dirty)recoveryDraft();saveScrollPosition();persistMode();if(dirty){e.preventDefault();e.returnValue=''}});
 
 if(ADMIN){
   $('#modebar').hidden=false;
@@ -613,6 +766,8 @@ if(ADMIN){
   $('#authNotice').hidden=true;
 }
 Promise.all([loadInitialData(),loadLocations(),loadPublicSettings()]).then(async()=>{
+  takeBaselines();
+  offerDraftRecovery();
   render(false);
   if(ADMIN&&INITIAL_MODE!=='public')await requestMode(INITIAL_MODE);
   else{mode='public';persistMode();restoreScrollPosition(mode)}
