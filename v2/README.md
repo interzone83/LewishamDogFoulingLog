@@ -14,6 +14,8 @@ The public URL deliberately hides all review/edit controls. The admin URL expose
 ### Public view
 Shows completed incidents only. Incomplete converted batches remain hidden until date/time, location, type and observation have all been supplied.
 
+Public users can sort by incident date, filter by main location, and search location descriptions and notes. The public summary and statistics are configurable by the administrator.
+
 ### Incident review
 Adds dated follow-up history to an existing incident. Each follow-up can contain:
 - review date
@@ -27,12 +29,13 @@ Follow-up evidence is kept separate from the original incident evidence.
 Supports:
 - converting pending `DOGLOG-...` shortcut batches into entries
 - deleting pending test batches
-- editing date/time, type, location and observation
+- editing date/time, type, precise location, main location and observation
 - adding an existing repository photo
 - uploading a new 1080 × 1440 JPEG
 - removing a photo, with optional repository-file deletion
 - deleting a post (and, where applicable, its dedicated DOGLOG folder)
-- reordering entries by move buttons or drag/drop
+- editing public-page summary text and statistics visibility
+- selecting a main location separately from the specific street address / landmark
 
 ## Identity and ordering
 
@@ -41,11 +44,17 @@ Every incident has a permanent `uid`.
 - migrated records: `LEGACY-001`, `LEGACY-002`, etc.
 - shortcut uploads: their original `DOGLOG-YYYYMMDD-HHmmss` batch ID
 
-The visible entry number is derived from the current saved ordering. Reordering therefore changes display entry numbers without changing permanent record IDs.
+The visible entry number is derived from the saved array order, but is hidden in Public View. Newest First / Oldest First sorts only the displayed cards: the underlying saved records and permanent IDs do not change.
+
+Converted DOGLOG batches prefill date/time from the upload ID and scroll to the new post with the Location field focused. Correct the timestamp if the incident occurred earlier.
+
+Existing detailed location descriptions are preserved. A main location may be assigned explicitly in Edit Log; existing records without one are grouped by a conservative inferred main location.
 
 ## Data and caching
 
-V2 stores records in `v2/incidents.js`. The page fetches that file with a cache-busting query and `cache: no-store`, so a refresh after a save should read the latest GitHub Pages data rather than a stale browser copy.
+V2 stores records in `v2/incidents.js`, reusable detailed-location suggestions in `v2/locations.json`, and public display settings in `v2/settings.json`.
+
+The site uses cache-busting requests where possible, but GitHub Pages propagation can still lag saves. The public display settings are saved separately from incident data so changes to the intro or statistics do not rewrite incident records.
 
 ## Save workflow
 
