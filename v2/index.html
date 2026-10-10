@@ -163,7 +163,7 @@ function offerDraftRecovery(){
   catch(e){console.warn('Could not read recovery draft',e);return false}
   if(!draft||draft.format!==1||!Array.isArray(draft.data)||typeof draft.baselineIncidents!=='string')return false;
   const when=draft.updatedAt?new Date(draft.updatedAt).toLocaleString('en-GB'):'an earlier session';
-  if(!confirm('An unsaved Dog Log editing draft from '+when+' is stored on this device. Restore those edits?\\n\\nCancel leaves that recovery copy available, but starting new edits may replace it.'))return false;
+  if(!confirm('An unsaved Dog Log editing draft from '+when+' is stored on this device. Restore those edits?\n\nCancel leaves that recovery copy available, but starting new edits may replace it.'))return false;
   data=normaliseData(draft.data);
   publicSettings=draft.publicSettings&&typeof draft.publicSettings==='object'?{...DEFAULT_PUBLIC_SETTINGS,...draft.publicSettings}:publicSettings;
   savedLocations=Array.isArray(draft.savedLocations)?[...new Set([...INITIAL_LOCATIONS,...draft.savedLocations])]:savedLocations;
@@ -603,11 +603,11 @@ $('#exportCsv').onclick=exportCsv;
 
 
 function decodedGitHubContent(base64){
-  const compact=String(base64||'').replace(/\\s/g,'');
+  const compact=String(base64||'').replace(/\s/g,'');
   return new TextDecoder().decode(Uint8Array.from(atob(compact),c=>c.charCodeAt(0)));
 }
 function incidentJSON(text){
-  return JSON.stringify(normaliseData(JSON.parse(String(text).trim().replace(/^window\\.INCIDENTS\\s*=\\s*/,'').replace(/;\\s*$/,''))));
+  return JSON.stringify(normaliseData(JSON.parse(String(text).trim().replace(/^window\.INCIDENTS\s*=\s*/,'').replace(/;\s*$/,''))));
 }
 function settingsJSON(text){
   return JSON.stringify({...DEFAULT_PUBLIC_SETTINGS,...JSON.parse(text)});
@@ -617,7 +617,7 @@ function locationsJSON(text){
   if(!Array.isArray(a))throw new Error('Saved locations are not an array');
   return JSON.stringify([...new Set([...INITIAL_LOCATIONS,...a])]);
 }
-const isGitHubConflict=e=>/\\b409\\b|does not match/i.test(String(e?.message||e));
+const isGitHubConflict=e=>/\b409\b|does not match/i.test(String(e?.message||e));
 async function commitSafely(path,content,baseline,expected,parseRemote,message){
   for(let attempt=0;attempt<4;attempt++){
     // A fresh GET and per-file SHA are needed for each attempt.
@@ -650,7 +650,7 @@ async function saveAll(focusUid=null){
   try{
     if(incidentsDirty){
       const snapshot=JSON.stringify(data);
-      await commitSafely(DATA_PATH,'window.INCIDENTS='+snapshot+';\\n',
+      await commitSafely(DATA_PATH,'window.INCIDENTS='+snapshot+';\n',
         baselineIncidents,snapshot,incidentJSON,'Update Version 2 dog fouling log');
       baselineIncidents=snapshot;
       incidentsDirty=JSON.stringify(data)!==snapshot;
@@ -659,7 +659,7 @@ async function saveAll(focusUid=null){
     }
     if(settingsDirty){
       const snapshot=JSON.stringify(publicSettings);
-      await commitSafely('v2/settings.json',JSON.stringify(publicSettings,null,2)+'\\n',
+      await commitSafely('v2/settings.json',JSON.stringify(publicSettings,null,2)+'\n',
         baselineSettings,snapshot,settingsJSON,'Update V2 public display settings');
       baselineSettings=snapshot;
       settingsDirty=JSON.stringify(publicSettings)!==snapshot;
@@ -668,7 +668,7 @@ async function saveAll(focusUid=null){
     }
     if(locationsDirty){
       const snapshot=JSON.stringify(savedLocations);
-      await commitSafely('v2/locations.json',JSON.stringify(savedLocations,null,2)+'\\n',
+      await commitSafely('v2/locations.json',JSON.stringify(savedLocations,null,2)+'\n',
         baselineLocations,snapshot,locationsJSON,'Update saved location choices');
       baselineLocations=snapshot;
       locationsDirty=JSON.stringify(savedLocations)!==snapshot;
@@ -682,7 +682,7 @@ async function saveAll(focusUid=null){
         await gh('/contents/'+file.path,{method:'DELETE',body:JSON.stringify({message:'Delete dog log file',sha:meta.sha})});
       }catch(e){
         // A file already missing is a successful deletion, not a retry failure.
-        if(!/\\b404\\b/.test(String(e?.message||e)))failedDeletes.push(file);
+        if(!/\b404\b/.test(String(e?.message||e)))failedDeletes.push(file);
       }
     }
     queuedDeletes=failedDeletes;
