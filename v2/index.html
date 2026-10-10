@@ -10,10 +10,10 @@
 header{background:#143d2e;color:#fff;padding:28px 18px}.wrap{max-width:1100px;margin:auto}h1{margin:0 0 8px}.sub{max-width:850px;line-height:1.5;opacity:.92}
 main{padding:18px}.modebar,.savebar,.tools{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.modebar{position:sticky;top:0;z-index:9;background:var(--bg);padding:8px 0}
 .btn,button,input,select,textarea{font:inherit}.btn{border:1px solid #b9c7c0;border-radius:9px;background:#fff;padding:9px 12px;cursor:pointer;text-decoration:none;color:inherit}.btn.primary{background:var(--g);color:#fff;border-color:var(--g)}.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}.btn.small{padding:6px 9px;font-size:.88rem}.btn.active{outline:2px solid #8cb9a3}.btn:disabled{opacity:.5;cursor:not-allowed}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.stat,.card,.pending{background:#fff;border:1px solid var(--line);border-radius:13px}.stat{padding:14px}.stat b{display:block;font-size:1.55rem}
-.tools{display:grid;grid-template-columns:1fr 220px}.tools input,.tools select,.editgrid input,.editgrid textarea,.editgrid select,.reviewgrid input,.reviewgrid textarea,.reviewgrid select{width:100%;padding:9px;border:1px solid #bcc8c1;border-radius:8px;background:#fff}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px}.stat,.card,.pending{background:#fff;border:1px solid var(--line);border-radius:13px}.stat{padding:14px}.stat b{display:block;font-size:1.55rem}
+.tools{display:grid;grid-template-columns:minmax(180px,2fr) repeat(3,minmax(150px,1fr)) auto}.tools .btn{white-space:nowrap}.tools input,.tools select,.editgrid input,.editgrid textarea,.editgrid select,.reviewgrid input,.reviewgrid textarea,.reviewgrid select{width:100%;padding:9px;border:1px solid #bcc8c1;border-radius:8px;background:#fff}
 #log{display:grid;gap:14px}.card{overflow:hidden}.head{display:flex;justify-content:space-between;gap:12px;padding:15px 15px 7px}.date{font-weight:800;color:var(--g)}h2{font-size:1.08rem;margin:3px 0}.badge{font-size:.76rem;background:#e8f3ed;color:var(--g);padding:6px 9px;border-radius:999px;height:max-content}.meta{padding:0 15px 13px;color:var(--muted);line-height:1.5}.meta b{color:#1d2925}.uid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;color:#7c8a84;margin-top:4px}
-.photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:#ddd}.photo{position:relative}.photos img{width:100%;height:250px;object-fit:cover;display:block;cursor:zoom-in}.photosize{position:absolute;top:7px;left:7px;background:#15271ee8;color:white;border-radius:5px;padding:4px 7px;font-size:.76rem;font-weight:700;pointer-events:none}.photoctrl{position:absolute;top:6px;right:6px}.photoctrl .btn{box-shadow:0 1px 5px #0005}
+.photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:#ddd}.photo{position:relative}.photos img{width:100%;height:250px;object-fit:cover;display:block;cursor:zoom-in}.photosize{position:absolute;top:7px;left:7px;background:#15271ee8;color:white;border-radius:5px;padding:4px 7px;font-size:.76rem;font-weight:700;pointer-events:none}.locdetail{color:var(--muted);font-size:.87rem;margin-top:3px}.settings-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 15px;margin:0 0 16px}.settings-panel summary{font-weight:750;cursor:pointer}.settings-panel p{color:var(--muted);font-size:.9rem}.settings-panel textarea{width:100%;padding:10px;border:1px solid #bcc8c1;border-radius:8px;resize:vertical;margin-top:5px}.settingchecks{display:flex;gap:15px;flex-wrap:wrap;margin:13px 0 6px}.settingchecks label{display:flex;gap:7px;align-items:center;font-size:.9rem}.settings-panel .settinglabel{display:block;font-weight:650;margin-top:12px}[hidden]{display:none!important}@media(min-width:651px) and (max-width:1050px){.tools{grid-template-columns:repeat(2,minmax(0,1fr))}}.photoctrl{position:absolute;top:6px;right:6px}.photoctrl .btn{box-shadow:0 1px 5px #0005}
 .editbox,.reviewbox{display:none;padding:14px 15px;border-top:1px solid var(--line);background:#fbfcfb}.edit-mode .editbox{display:block}.review-mode .reviewbox{display:block}
 .editgrid,.reviewgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wide{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.dragging{opacity:.45}.draghandle{cursor:grab}
 .reviewhistory{margin-top:10px}.check{padding:8px 10px;border-left:3px solid var(--g);background:#f7faf8;margin:7px 0}.check .photos{margin-top:8px}
@@ -26,7 +26,7 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
 </style>
 </head>
 <body>
-<header><div class="wrap"><h1>Lewisham Dog Fouling Evidence Log <span id="versionBadge" style="font-size:.65em;opacity:.65" hidden>V2</span></h1><div class="sub">An ongoing photographic record of dog fouling and discarded bagged dog waste observed on local pedestrian routes. Follow-up checks document whether individual incidents remain, have been cleared, or have changed.</div></div></header>
+<header><div class="wrap"><h1>Lewisham Dog Fouling Evidence Log <span id="versionBadge" style="font-size:.65em;opacity:.65" hidden>V2</span></h1><div id="publicIntro" class="sub"></div></div></header>
 <main class="wrap">
 <div id="modebar" class="modebar" hidden>
   <button class="btn active" data-mode="public">Public view</button>
@@ -40,26 +40,39 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
   <button id="exportCsv" class="btn">Export CSV</button>
   <span id="saveStatus" class="status">GitHub connected · no unsaved changes</span>
 </div>
-<section class="stats">
-  <div class="stat"><b id="incidentCount">0</b><span>logged incidents</span></div>
-  <div class="stat"><b id="photoCount">0</b><span>evidence photographs</span></div>
-  <div class="stat"><b id="locationCount">0</b><span>distinct locations/routes</span></div>
+<section class="stats" id="stats">
+  <div class="stat" id="statIncidents"><b id="incidentCount">0</b><span>logged incidents</span></div>
+  <div class="stat" id="statPhotos"><b id="photoCount">0</b><span>evidence photographs</span></div>
+  <div class="stat" id="statLocations"><b id="locationCount">0</b><span>main locations</span></div>
 </section>
 <section class="tools">
   <input id="search" type="search" placeholder="Search location, notes, type or record ID…">
   <select id="typeFilter"><option value="">All incident types</option></select>
   <select id="dateOrder" aria-label="Sort incidents by main incident date"><option value="newest">Incident date: Newest first</option><option value="oldest">Incident date: Oldest first</option></select>
+  <select id="mainLocationFilter" aria-label="Filter by main location"><option value="">All main locations</option></select>
   <button id="refreshData" class="btn">Refresh saved data</button>
+</section>
+<section id="publicControls" class="settings-panel" hidden>
+  <details>
+    <summary>Public page settings</summary>
+    <p>Choose which summary figures appear on the public page and edit the introductory text. Use Save changes to GitHub to publish changes.</p>
+    <label class="settinglabel" for="publicSummaryEditor">Introductory summary</label>
+    <textarea id="publicSummaryEditor" rows="3"></textarea>
+    <div class="settingchecks">
+      <label><input type="checkbox" id="showIncidentCount"> Show incident count</label>
+      <label><input type="checkbox" id="showPhotoCount"> Show photo count</label>
+      <label><input type="checkbox" id="showLocationCount"> Show main-location count</label>
+    </div>
+  </details>
 </section>
 <section id="pendingWrap" class="pendingwrap"><h3>Pending uploads</h3><div id="pendingList"></div></section>
 <section id="log"></section>
 <div id="empty" class="empty" hidden>No entries match.</div>
 </main>
-<footer>Observations and estimated ages are recorded as such and should not be read as independently verified facts.</footer>
 
 <dialog id="authDlg"><div class="dialogbody"><h3>Connect GitHub editing</h3><p>Enter the fine-grained repository token used by your upload shortcut. It is held in session storage for this browser tab/session only.</p><input id="tokenInput" type="password" autocomplete="off" placeholder="GitHub token" style="width:100%;padding:10px"><div class="dialogactions"><button class="btn" data-close>Cancel</button><button id="authSave" class="btn primary">Connect</button></div></div></dialog>
 <dialog id="repoDlg"><div class="dialogbody"><h3>Select an existing repository image</h3><div class="browserbar"><button id="browserUp" class="btn small">↑ Up one level</button><span id="browserPath" class="browserpath">images</span></div><div id="repoImages" class="repoimages"></div><div class="dialogactions"><button class="btn" data-close>Close</button></div></div></dialog>
-<dialog id="viewer"><button class="closeviewer" aria-label="Close">×</button><button class="prevviewer" aria-label="Previous photo">‹</button><img alt="Expanded evidence photograph"><button class="nextviewer" aria-label="Next photo">›</button><span class="viewercounter"></span></dialog><datalist id="locationsList"></datalist>
+<dialog id="viewer"><button class="closeviewer" aria-label="Close">×</button><button class="prevviewer" aria-label="Previous photo">‹</button><img alt="Expanded evidence photograph"><button class="nextviewer" aria-label="Next photo">›</button><span class="viewercounter"></span></dialog><datalist id="locationsList"></datalist><datalist id="primaryLocationsList"></datalist>
 <input id="fileInput" type="file" accept="image/*" multiple hidden>
 
 <script>
@@ -71,6 +84,18 @@ const VALID_MODES=['public','review','edit'];
 const STORED_MODE=sessionStorage.getItem('doglogViewMode');
 const INITIAL_MODE=ADMIN&&(VALID_MODES.includes(PAGE_PARAMS.get('view'))?PAGE_PARAMS.get('view'):(VALID_MODES.includes(STORED_MODE)?STORED_MODE:'public'));
 const TYPES=['Unbagged fouling','Spread / smeared fouling','Residue after attempted clean-up','Bagged dog waste'];
+const MAIN_LOCATIONS=['Dunfield Road','Brookehowse Road','Sedge Hill Road','Beckenham Hill Road','Beckenham Hill station approaches','Beckenham Place Park','Southend Lane',"St Augustine's School area"];
+const DEFAULT_PUBLIC_SETTINGS={
+  summary:'An ongoing photographic record of dog fouling and discarded bagged dog waste observed on local pedestrian routes. Follow-up checks document whether individual incidents remain, have been cleared, or have changed.',
+  showIncidentCount:true,showPhotoCount:false,showLocationCount:false
+};
+let publicSettings={...DEFAULT_PUBLIC_SETTINGS};
+let incidentsDirty=false,settingsDirty=false;
+async function loadPublicSettings(){
+  try{const r=await fetch('settings.json?ts='+Date.now(),{cache:'no-store'});
+    if(r.ok){const v=await r.json();if(v&&typeof v==='object')publicSettings={...DEFAULT_PUBLIC_SETTINGS,...v}}
+  }catch(e){console.warn('Public display settings unavailable',e)}
+}
 
 let data=[];
 function normaliseData(raw){
@@ -110,7 +135,12 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const encPath=p=>p.split('/').map(encodeURIComponent).join('/');
 const imageURL=p=>p.startsWith('data:')?p:(p.startsWith('images/')?'../'+encPath(p):'../images/'+encPath(p))+'?v='+assetVersion;
 function sizeFor(p){const key=String(p).startsWith('images/')?String(p):'images/'+p;const f=repoTree.find(x=>x.path===key);if(!f||!Number.isFinite(f.size))return 'Size unavailable';return f.size>=1048576?(f.size/1048576).toFixed(2)+' MB':Math.round(f.size/1024)+' KB'}
-function locationList(){const vals=[...new Set([...savedLocations,...data.map(x=>x.location).filter(Boolean)])].sort();$('#locationsList').innerHTML=vals.map(v=>'<option value="'+esc(v)+'"></option>').join('')}
+function locationList(){
+  const vals=[...new Set([...savedLocations,...data.map(x=>x.location).filter(Boolean)])].sort();
+  $('#locationsList').innerHTML=vals.map(v=>'<option value="'+esc(v)+'"></option>').join('');
+  const mains=[...new Set([...MAIN_LOCATIONS,...data.map(primaryLocation).filter(Boolean)])].sort();
+  $('#primaryLocationsList').innerHTML=mains.map(v=>'<option value="'+esc(v)+'"></option>').join('');
+}
 async function loadLocations(){try{const r=await fetch('locations.json?v='+Date.now(),{cache:'no-store'});if(r.ok){const a=await r.json();if(Array.isArray(a))savedLocations=[...new Set([...savedLocations,...a])]}}catch(e){console.warn(e)}}
 const localISODate=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
 
@@ -132,12 +162,40 @@ function persistMode(){
   if(mode==='public')u.searchParams.delete('view');else u.searchParams.set('view',mode);
   history.replaceState(null,'',u.pathname+u.search+u.hash);
 }
-function markDirty(msg='Unsaved changes'){
+function markDirty(msg='Unsaved changes',changesIncidents=true){
+  if(changesIncidents)incidentsDirty=true;
   dirty=true;
   lastSavedUid=null;
   const s=$('#saveStatus'); if(s){s.textContent=msg;s.className='status'}
 }
 function isComplete(i){return !!(i.firstSeen&&i.location&&i.type&&i.notes)}
+function searchable(v){
+  return String(v??'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
+    .replace(/\bst\.?\s+(?=augustin)/g,'saint ')
+    .replace(/\bsaint\.?\s+(?=augustin)/g,'saint ')
+    .replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
+}
+function primaryLocation(i){
+  const chosen=String(i.primaryLocation||'').trim();
+  if(chosen)return chosen;
+  const detail=String(i.location||'').trim(),t=searchable(detail);
+  if(/\bbrookehowse\b|\bbrookhouse\b/.test(t))return 'Brookehowse Road';
+  if(/\bdunfield\b/.test(t))return 'Dunfield Road';
+  if(/\bsedge hill\b/.test(t))return 'Sedge Hill Road';
+  if(/\bsouthend lane\b|\blidl\b/.test(t))return 'Southend Lane';
+  if(/\bbeckenham place park\b|\bplayground\b|\bold bromley road entrance\b|\bnorth gate\b/.test(t))return 'Beckenham Place Park';
+  if(/\bbeckenham hill station\b/.test(t))return 'Beckenham Hill station approaches';
+  if(/\bbeckenham hill road\b/.test(t))return 'Beckenham Hill Road';
+  if(/\bsaint augustin/.test(t))return "St Augustine's School area";
+  return detail;
+}
+function updateMainLocationFilter(){
+  const select=$('#mainLocationFilter'),previous=select.value;
+  const rows=mode==='edit'?data:data.filter(isComplete);
+  const options=[...new Set(rows.map(primaryLocation).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  select.innerHTML='<option value="">All main locations</option>'+options.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');
+  select.value=options.includes(previous)?previous:'';
+}
 function entryNo(i){return data.indexOf(i)+1}
 // Sort only the displayed cards; never mutate the order of saved incident records.
 function incidentTimestamp(i){
@@ -182,17 +240,23 @@ function refreshStats(){
   const rows=mode==='edit'?data:data.filter(isComplete);
   $('#incidentCount').textContent=rows.length;
   $('#photoCount').textContent=rows.reduce((n,i)=>n+(i.images?.length||0)+(i.checks||[]).reduce((m,c)=>m+(c.images?.length||0),0),0);
-  $('#locationCount').textContent=new Set(rows.map(i=>i.location).filter(Boolean)).size;
+  $('#locationCount').textContent=new Set(rows.map(primaryLocation).filter(Boolean)).size;
+  const adminMode=mode!=='public';
+  $('#statIncidents').hidden=!adminMode&&!publicSettings.showIncidentCount;
+  $('#statPhotos').hidden=!adminMode&&!publicSettings.showPhotoCount;
+  $('#statLocations').hidden=!adminMode&&!publicSettings.showLocationCount;
+  $('#stats').hidden=$('#stats .stat').every(el=>el.hidden);
 }
 function followupHtml(check){
   return `<div class="check"><b>${esc(check.date||'')}</b> — ${esc(check.status||'')}${check.note?': '+esc(check.note):''}${(check.images||[]).length?`<div class="photos">${check.images.map(p=>`<div class="photo"><img loading="lazy" src="${imageURL(p)}" data-full="${imageURL(p)}" alt="Follow-up evidence photograph">${mode==='edit'?`<span class="photosize">${esc(sizeFor(p))}</span>`:''}</div>`).join('')}</div>`:''}</div>`;
 }
 function card(i){
-  const no=entryNo(i),d=reviewDraft(i.uid);
+  const no=entryNo(i),d=reviewDraft(i.uid),main=primaryLocation(i),specific=String(i.location||'').trim();
+  const detail=specific&&searchable(specific)!==searchable(main)?'<div class="locdetail">'+esc(specific)+'</div>':'';
   return `<article class="card" data-index="${data.indexOf(i)}" data-uid="${esc(i.uid)}">
     <div class="head">
-      <div><div class="date">${esc(displayDate(i))}</div><h2>${esc(i.location||'Location pending')}</h2><div class="uid">Record ID: ${esc(i.uid)}</div></div>
-      <div><span class="badge">${esc(i.type||'Pending type')}</span><div style="margin-top:7px;text-align:right">Entry #${String(no).padStart(2,'0')}</div></div>
+      <div><div class="date">${esc(displayDate(i))}</div><h2>${esc(main||'Location pending')}</h2>${detail}<div class="uid">Record ID: ${esc(i.uid)}</div></div>
+      <div><span class="badge">${esc(i.type||'Pending type')}</span>${mode!=='public'?`<div style="margin-top:7px;text-align:right">Entry #${String(no).padStart(2,'0')}</div>`:''}</div>
     </div>
     <div class="meta">
       ${i.photoRecorded?`<p><b>Photo recorded:</b> ${esc(i.photoRecorded)}</p>`:''}
@@ -213,7 +277,8 @@ function card(i){
       <div class="editgrid">
         <label>Date/time<input type="datetime-local" data-field="firstSeen" value="${toInputDate(i.firstSeen)}"></label>
         <label>Type<select data-field="type">${typeOptions(i.type||'')}</select></label>
-        <label class="wide">Location (select or type)<input list="locationsList" data-field="location" value="${esc(i.location||'')}"></label>
+        <label class="wide">Main location (public filtering)<input list="primaryLocationsList" data-field="primaryLocation" value="${esc(i.primaryLocation||primaryLocation(i))}" placeholder="e.g. Dunfield Road"></label>
+        <label class="wide">Specific location / landmark (select or type)<input list="locationsList" data-field="location" value="${esc(i.location||'')}"></label>
         <label class="wide">Observation<textarea data-field="notes" rows="3">${esc(i.notes||'')}</textarea></label>
       </div>
       <div class="actions">
@@ -233,9 +298,16 @@ function render(preserveScroll=true){
   $$('.modebar [data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
   $('#authNotice').hidden=mode==='public';
   $('#dateOrder').value=dateOrder;
+  $('#publicIntro').textContent=publicSettings.summary||'';
+  $('#publicControls').hidden=mode!=='edit';
+  $('#publicSummaryEditor').value=publicSettings.summary||'';
+  $('#showIncidentCount').checked=!!publicSettings.showIncidentCount;
+  $('#showPhotoCount').checked=!!publicSettings.showPhotoCount;
+  $('#showLocationCount').checked=!!publicSettings.showLocationCount;
   locationList();
-  const q=$('#search').value.trim().toLowerCase(),t=$('#typeFilter').value;
-  const rows=data.filter(i=>(mode==='edit'||isComplete(i))&&(!t||i.type===t)&&(!q||[i.location,i.notes,i.type,i.firstSeen,i.uid].join(' ').toLowerCase().includes(q)));
+  updateMainLocationFilter();
+  const q=searchable($('#search').value),t=$('#typeFilter').value,mainFilter=$('#mainLocationFilter').value;
+  const rows=data.filter(i=>(mode==='edit'||isComplete(i))&&(!t||i.type===t)&&(!mainFilter||primaryLocation(i)===mainFilter)&&(!q||searchable([primaryLocation(i),i.location,i.notes,i.type,i.firstSeen,i.uid,i.photoRecorded].join(' ')).includes(q)));
   const shown=byIncidentDate(rows);
   $('#log').innerHTML=shown.map(card).join('');
   $('#empty').hidden=shown.length>0;
@@ -472,9 +544,18 @@ async function saveAll(focusUid=null){
   saving=true;
   const st=$('#saveStatus');st.className='status';st.textContent='Saving…';
   try{
-    const meta=await gh('/contents/'+DATA_PATH+'?ref=main');
-    const content='window.INCIDENTS='+JSON.stringify(data)+';\n';
-    await gh('/contents/'+DATA_PATH,{method:'PUT',body:JSON.stringify({message:'Update Version 2 dog fouling log',content:btoa(unescape(encodeURIComponent(content))),sha:meta.sha})});
+    if(incidentsDirty){
+      const meta=await gh('/contents/'+DATA_PATH+'?ref=main');
+      const content='window.INCIDENTS='+JSON.stringify(data)+';\n';
+      await gh('/contents/'+DATA_PATH,{method:'PUT',body:JSON.stringify({message:'Update Version 2 dog fouling log',content:btoa(unescape(encodeURIComponent(content))),sha:meta.sha})});
+      incidentsDirty=false;
+    }
+    if(settingsDirty){
+      const meta=await gh('/contents/v2/settings.json?ref=main');
+      const content=JSON.stringify(publicSettings,null,2)+'\n';
+      await gh('/contents/v2/settings.json',{method:'PUT',body:JSON.stringify({message:'Update V2 public display settings',content:btoa(unescape(encodeURIComponent(content))),sha:meta.sha})});
+      settingsDirty=false;
+    }
     if(locationsDirty){const locationMeta=await gh('/contents/v2/locations.json?ref=main');await gh('/contents/v2/locations.json',{method:'PUT',body:JSON.stringify({message:'Update saved location choices',content:btoa(unescape(encodeURIComponent(JSON.stringify(savedLocations,null,2)+'\n'))),sha:locationMeta.sha})});locationsDirty=false;}
     const failedDeletes=[];
     for(const d of queuedDeletes){
@@ -484,7 +565,7 @@ async function saveAll(focusUid=null){
       }catch(e){console.warn('Delete failed',d.path,e);failedDeletes.push(d)}
     }
     queuedDeletes=failedDeletes;
-    dirty=failedDeletes.length>0;repoTree=[];pending=[];assetVersion=Date.now();
+    dirty=incidentsDirty||settingsDirty||locationsDirty||failedDeletes.length>0;repoTree=[];pending=[];assetVersion=Date.now();
     lastSavedUid=focusUid;
     st.textContent=failedDeletes.length?`Log saved; ${failedDeletes.length} file deletion(s) failed — queued to retry`:'✓ Saved to GitHub';
     st.className=failedDeletes.length?'status error':'status saved';
@@ -492,18 +573,32 @@ async function saveAll(focusUid=null){
     render(false);
     requestAnimationFrame(()=>window.scrollTo(0,y));
   }catch(e){
-    st.textContent='Save failed — changes retained';st.className='status error';alert('Save failed: '+e.message);
+    dirty=incidentsDirty||settingsDirty||locationsDirty||queuedDeletes.length>0;
+    st.textContent='Save incomplete — remaining changes retained';st.className='status error';alert('Save failed: '+e.message);
   }finally{saving=false}
 }
 $('#saveAll').onclick=saveAll;
 $$('.modebar [data-mode]').forEach(b=>b.onclick=()=>requestMode(b.dataset.mode));
-$('#search').oninput=render;$('#typeFilter').onchange=render;
+$('#search').oninput=render;
+$('#typeFilter').onchange=render;
+$('#mainLocationFilter').onchange=render;
+$('#publicSummaryEditor').oninput=e=>{
+  publicSettings.summary=e.target.value;$('#publicIntro').textContent=e.target.value;
+  settingsDirty=true;markDirty('Public summary edited · save to publish',false);
+};
+for(const [id,key] of [['showIncidentCount','showIncidentCount'],['showPhotoCount','showPhotoCount'],['showLocationCount','showLocationCount']]){
+  $('#'+id).onchange=e=>{
+    publicSettings[key]=e.target.checked;settingsDirty=true;
+    markDirty('Public display settings edited · save to publish',false);
+    refreshStats();
+  };
+}
 $('#dateOrder').onchange=e=>{
   dateOrder=e.target.value==='oldest'?'oldest':'newest';
   sessionStorage.setItem('doglogDateOrder',dateOrder);
   render();
 };
-$('#refreshData').onclick=async()=>{if(dirty&&!confirm('Discard unsaved edits and reload saved data?'))return;const b=$('#refreshData');b.disabled=true;try{if(token){const j=await gh('/contents/'+DATA_PATH+'?ref=main');const bin=atob(j.content.replaceAll(String.fromCharCode(10),'').replaceAll(String.fromCharCode(13),''));const raw=new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0)));const cleaned=raw.substring(raw.indexOf('=')+1).trim().replace(/;$/,'');data=normaliseData(JSON.parse(cleaned));await loadPending()}else await loadInitialData();assetVersion=Date.now();queuedDeletes=[];dirty=false;render(false)}catch(e){alert('Refresh failed: '+e.message)}finally{b.disabled=false}};
+$('#refreshData').onclick=async()=>{if(dirty&&!confirm('Discard unsaved edits and reload saved data?'))return;const b=$('#refreshData');b.disabled=true;try{if(token){const j=await gh('/contents/'+DATA_PATH+'?ref=main');const bin=atob(j.content.replaceAll(String.fromCharCode(10),'').replaceAll(String.fromCharCode(13),''));const raw=new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0)));const cleaned=raw.substring(raw.indexOf('=')+1).trim().replace(/;$/,'');data=normaliseData(JSON.parse(cleaned));await loadPending()}else await loadInitialData();assetVersion=Date.now();queuedDeletes=[];dirty=false;incidentsDirty=false;settingsDirty=false;await loadPublicSettings();render(false)}catch(e){alert('Refresh failed: '+e.message)}finally{b.disabled=false}};
 TYPES.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;$('#typeFilter').appendChild(o)});
 $('#viewer .closeviewer').onclick=()=>$('#viewer').close();$('#viewer .prevviewer').onclick=()=>advanceViewer(-1);$('#viewer .nextviewer').onclick=()=>advanceViewer(1);document.addEventListener('keydown',e=>{if(!$('#viewer').open)return;if(e.key==='ArrowLeft')advanceViewer(-1);if(e.key==='ArrowRight')advanceViewer(1)});let touchStart=null;$('#viewer').addEventListener('touchstart',e=>{touchStart=e.changedTouches[0]?.clientX},{passive:true});$('#viewer').addEventListener('touchend',e=>{if(touchStart==null)return;const dx=e.changedTouches[0]?.clientX-touchStart;if(Math.abs(dx)>45)advanceViewer(dx<0?1:-1);touchStart=null},{passive:true});
 $('#viewer').onclick=e=>{if(e.target===$('#viewer'))$('#viewer').close()};
@@ -517,7 +612,7 @@ if(ADMIN){
   $('.savebar').style.display='none';
   $('#authNotice').hidden=true;
 }
-Promise.all([loadInitialData(),loadLocations()]).then(async()=>{
+Promise.all([loadInitialData(),loadLocations(),loadPublicSettings()]).then(async()=>{
   render(false);
   if(ADMIN&&INITIAL_MODE!=='public')await requestMode(INITIAL_MODE);
   else{mode='public';persistMode();restoreScrollPosition(mode)}
