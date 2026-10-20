@@ -12,7 +12,7 @@ main{padding:18px}.modebar,.savebar,.tools{display:flex;gap:9px;flex-wrap:wrap;m
 .btn,button,input,select,textarea{font:inherit}.btn{border:1px solid #b9c7c0;border-radius:9px;background:#fff;padding:9px 12px;cursor:pointer;text-decoration:none;color:inherit}.btn.primary{background:var(--g);color:#fff;border-color:var(--g)}.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}.btn.small{padding:6px 9px;font-size:.88rem}.btn.active{outline:2px solid #8cb9a3}.btn:disabled{opacity:.5;cursor:not-allowed}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px}.stat,.card,.pending{background:#fff;border:1px solid var(--line);border-radius:13px}.stat{padding:14px}.stat b{display:block;font-size:1.55rem}
 .tools{display:grid;grid-template-columns:minmax(180px,2fr) repeat(3,minmax(150px,1fr)) auto}.tools .btn{white-space:nowrap}.tools input,.tools select,.editgrid input,.editgrid textarea,.editgrid select,.reviewgrid input,.reviewgrid textarea,.reviewgrid select{width:100%;padding:9px;border:1px solid #bcc8c1;border-radius:8px;background:#fff}
-#log{display:grid;gap:14px}.card{overflow:hidden}.head{display:flex;justify-content:space-between;gap:12px;padding:15px 15px 7px}.date{font-weight:800;color:var(--g)}h2{font-size:1.08rem;margin:3px 0}.badge{font-size:.76rem;background:#e8f3ed;color:var(--g);padding:6px 9px;border-radius:999px;height:max-content}.meta{padding:0 15px 13px;color:var(--muted);line-height:1.5}.meta b{color:#1d2925}.uid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;color:#7c8a84;margin-top:4px}
+#log{display:grid;gap:14px}.card{overflow:hidden}.head{display:flex;justify-content:space-between;gap:12px;padding:15px 15px 7px}.date{font-weight:800;color:var(--g)}h2{font-size:1.08rem;margin:3px 0}.badge{font-size:.76rem;background:#e8f3ed;color:var(--g);padding:6px 9px;border-radius:999px;height:max-content}.badge.incomplete{display:inline-block;background:#fff0c4;color:#755000;margin-top:7px}.meta{padding:0 15px 13px;color:var(--muted);line-height:1.5}.meta b{color:#1d2925}.uid{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;color:#7c8a84;margin-top:4px}
 .photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:#ddd}.photo{position:relative}.photos img{width:100%;height:250px;object-fit:cover;display:block;cursor:zoom-in}.photosize{position:absolute;top:7px;left:7px;background:#15271ee8;color:white;border-radius:5px;padding:4px 7px;font-size:.76rem;font-weight:700;pointer-events:none}.locdetail{color:var(--muted);font-size:.87rem;margin-top:3px}.settings-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 15px;margin:0 0 16px}.settings-panel summary{font-weight:750;cursor:pointer}.settings-panel p{color:var(--muted);font-size:.9rem}.settings-panel textarea{width:100%;padding:10px;border:1px solid #bcc8c1;border-radius:8px;resize:vertical;margin-top:5px}.settingchecks{display:flex;gap:15px;flex-wrap:wrap;margin:13px 0 6px}.settingchecks label{display:flex;gap:7px;align-items:center;font-size:.9rem}.settings-panel .settinglabel{display:block;font-weight:650;margin-top:12px}[hidden]{display:none!important}@media(min-width:651px) and (max-width:1050px){.tools{grid-template-columns:repeat(2,minmax(0,1fr))}}.photoctrl{position:absolute;top:6px;right:6px}.photoctrl .btn{box-shadow:0 1px 5px #0005}
 .editbox,.reviewbox{display:none;padding:14px 15px;border-top:1px solid var(--line);background:#fbfcfb}.edit-mode .editbox{display:block}.review-mode .reviewbox{display:block}
 .editgrid,.reviewgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wide{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.dragging{opacity:.45}.draghandle{cursor:grab}
@@ -222,7 +222,8 @@ function markDirty(msg='Unsaved changes',changesIncidents=true){
   const s=$('#saveStatus'); if(s){s.textContent=msg;s.className='status'}
   if(ADMIN&&dirty&&!recoveryDraft()&&s){s.textContent=msg+' · local recovery unavailable'}
 }
-function isComplete(i){return !!(i.firstSeen&&i.location&&i.type&&i.notes)}
+function missingFields(i){return [['Date/time',i.firstSeen],['Location',i.location],['Incident type',i.type],['Observation',i.notes]].filter(([,value])=>!value).map(([label])=>label)}
+function isComplete(i){return missingFields(i).length===0}
 function searchable(v){
   return String(v??'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
     .replace(/\bst\.?\s+(?=augustin)/g,'saint ')
@@ -305,12 +306,12 @@ function followupHtml(check){
   return `<div class="check"><b>${esc(check.date||'')}</b> — ${esc(check.status||'')}${check.note?': '+esc(check.note):''}${(check.images||[]).length?`<div class="photos">${check.images.map(p=>`<div class="photo"><img loading="lazy" src="${imageURL(p)}" data-full="${imageURL(p)}" alt="Follow-up evidence photograph">${mode==='edit'?`<span class="photosize">${esc(sizeFor(p))}</span>`:''}</div>`).join('')}</div>`:''}</div>`;
 }
 function card(i){
-  const no=entryNo(i),d=reviewDraft(i.uid),main=primaryLocation(i),specific=String(i.location||'').trim();
+  const no=entryNo(i),d=reviewDraft(i.uid),main=primaryLocation(i),specific=String(i.location||'').trim(),missing=missingFields(i);
   const detail=specific&&searchable(specific)!==searchable(main)?'<div class="locdetail">'+esc(specific)+'</div>':'';
   return `<article class="card" data-index="${data.indexOf(i)}" data-uid="${esc(i.uid)}">
     <div class="head">
       <div><div class="date">${esc(displayDate(i))}</div><h2>${esc(main||'Location pending')}</h2>${detail}<div class="uid">Record ID: ${esc(i.uid)}</div></div>
-      <div><span class="badge">${esc(i.type||'Pending type')}</span>${mode!=='public'?`<div style="margin-top:7px;text-align:right">Entry #${String(no).padStart(2,'0')}</div>`:''}</div>
+      <div><span class="badge">${esc(i.type||'Pending type')}</span>${mode==='edit'?`<div><span class="badge incomplete" data-incomplete${missing.length?'':' hidden'}>Incomplete · missing ${esc(missing.join(', '))}</span></div>`:''}${mode!=='public'?`<div style="margin-top:7px;text-align:right">Entry #${String(no).padStart(2,'0')}</div>`:''}</div>
     </div>
     <div class="meta">
       ${i.photoRecorded?`<p><b>Photo recorded:</b> ${esc(i.photoRecorded)}</p>`:''}
@@ -374,20 +375,44 @@ function bindCards(){
   $$('.card').forEach(el=>{
     const idx=+el.dataset.index,i=data[idx];
     el.querySelectorAll('[data-field]').forEach(inp=>{
+      const field=inp.dataset.field;
+      const updateIncompleteBadge=()=>{
+        const badge=el.querySelector('[data-incomplete]');
+        if(!badge)return;
+        const missing=missingFields(i);
+        badge.hidden=missing.length===0;
+        badge.textContent='Incomplete · missing '+missing.join(', ');
+      };
+      if(field==='firstSeen'){
+        // Mobile date/time pickers can emit change after each hour/minute selection.
+        // Never rebuild the DOM while the picker is active: resort on the next render/save.
+        const syncDate=(allowEmpty=false)=>{
+          const raw=inp.value;
+          if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)&&!(allowEmpty&&raw===''))return;
+          const value=raw.replace('T',' ');
+          if(i.firstSeen===value)return;
+          i.firstSeen=value;
+          i.displayFirstSeen='';
+          markDirty('Date/time edited · save to publish');
+          el.querySelector('.date').textContent=displayDate(i);
+          updateIncompleteBadge();
+        };
+        inp.addEventListener('input',()=>syncDate());
+        inp.addEventListener('change',()=>syncDate());
+        inp.addEventListener('blur',()=>syncDate(true));
+        return;
+      }
       inp.addEventListener('input',()=>{
-        const field=inp.dataset.field,value=field==='firstSeen'?inp.value.replace('T',' '):inp.value;
-        if(i[field]!==value){
-          i[field]=value;
-          if(field==='firstSeen')i.displayFirstSeen='';
+        if(i[field]!==inp.value){
+          i[field]=inp.value;
           markDirty('Unsaved edits · recovery copy updated');
+          updateIncompleteBadge();
         }
       });
       inp.onchange=()=>{
-      const field=inp.dataset.field;
-      i[field]=field==='firstSeen'?inp.value.replace('T',' '):inp.value;
-      if(field==='firstSeen')i.displayFirstSeen='';
-      if(field==='location'&&i.location.trim()&&!savedLocations.includes(i.location)&&confirm('Save this as a reusable location?')){savedLocations.push(i.location);locationsDirty=true;}
-      markDirty();render();
+        i[field]=inp.value;
+        if(field==='location'&&i.location.trim()&&!savedLocations.includes(i.location)&&confirm('Save this as a reusable location?')){savedLocations.push(i.location);locationsDirty=true;}
+        markDirty();render();
       };
     });
     el.querySelector('[data-rdate]')?.addEventListener('change',e=>reviewDraft(i.uid).date=e.target.value);
