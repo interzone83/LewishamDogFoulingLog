@@ -47,9 +47,9 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
   <h2>Website traffic</h2>
   <p id="trafficStatus" role="status">Loading tracking settings…</p>
   <p>Track visits to the public evidence log with Cloudflare Web Analytics. Admin visits are excluded. Cloudflare provides approximate unique visitor and page-view figures without giving you a list of IP addresses.</p>
-  <label class="settinglabel" for="cloudflareSiteToken">Cloudflare Web Analytics site token (not an API token)</label>
-  <input id="cloudflareSiteToken" type="text" spellcheck="false" autocomplete="off" placeholder="32-character site token">
-  <p>Register <b>interzone83.github.io</b> in Cloudflare Web Analytics, then paste the <b>site token</b> from its JavaScript snippet above. Save changes to GitHub to enable counting. You may also clear the token and save to disable it. Never enter a Cloudflare API token, password or secret here: this site token is intentionally public.</p>
+  <label class="settinglabel" for="cloudflareSiteToken">Cloudflare site token or complete JavaScript snippet (not an API token)</label>
+  <input id="cloudflareSiteToken" type="text" spellcheck="false" autocomplete="off" placeholder="Paste Cloudflare snippet or 32-character token">
+  <p>Register <b>interzone83.github.io</b> in Cloudflare Web Analytics, then paste the <b>entire JS snippet</b> (or just the 32-character site token). The site automatically extracts the token. Save changes to GitHub to enable counting. You may also clear the token and save to disable it. Never enter a Cloudflare API token, password or secret here: this site token is intentionally public.</p>
   <a class="btn traffic-link" href="https://dash.cloudflare.com/?to=/:account/web-analytics" target="_blank" rel="noopener noreferrer">View private stats in Cloudflare ↗</a>
   <div class="notice">The visitor totals live in your private Cloudflare account, not in GitHub. Embedding those totals directly here requires a separate authenticated server-side connection; GitHub Pages cannot securely retrieve them on its own. No private analytics API credentials are stored on this website.</div>
 </section>
@@ -782,18 +782,36 @@ async function saveAll(focusUid=null){
     saving=false;
   }
 }
+function extractCloudflareSiteToken(input){
+  const raw=String(input||'').trim();
+  if(/^[a-f\d]{32}$/i.test(raw))return raw.toLowerCase();
+  if(!/cloudflareinsights\.com\/beacon\.min\.js|data-cf-beacon/i.test(raw))return '';
+  const match=raw.match(/["']token["']\s*:\s*["']([a-f\d]{32})["']/i)
+    ||raw.match(/[?&]token=([a-f\d]{32})/i);
+  return match?match[1].toLowerCase():'';
+}
 $('#cloudflareSiteToken').addEventListener('change',e=>{
-  const value=e.target.value.trim();
-  if(value&&!/^[a-f\d]{32}$/i.test(value)){
-    $('#trafficStatus').textContent='Invalid site token. Enter the 32-character Cloudflare beacon token, not an API token.';
+  const raw=e.target.value.trim();
+  const value=raw?extractCloudflareSiteToken(raw):'';
+  if(raw&&!value){
+    $('#trafficStatus').textContent='Invalid Cloudflare snippet or token. Use the Web Analytics JS snippet (not an API key).';
     $('#trafficStatus').className='status error';
     return;
   }
+  e.target.value=value; // Never save the surrounding script to GitHub.
   if(value===String(publicSettings.cloudflareSiteToken||''))return;
   publicSettings.cloudflareSiteToken=value;
   settingsDirty=true;
   markDirty('Cloudflare tracking settings changed · save to publish',false);
   refreshTrafficStatus();
+});
+$('#cloudflareSiteToken').addEventListener('paste',e=>{
+  const clipboard=e.clipboardData?.getData('text')||'';
+  const value=extractCloudflareSiteToken(clipboard);
+  if(!value)return; // Let change handler validate unexpected pasted text.
+  e.preventDefault();
+  e.target.value=value;
+  e.target.dispatchEvent(new Event('change',{bubbles:true}));
 });
 $('#saveAll').onclick=saveAll;
 $$('.modebar [data-mode]').forEach(b=>b.onclick=()=>requestMode(b.dataset.mode));
