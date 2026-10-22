@@ -78,7 +78,7 @@ Cloudflare setup is separate from GitHub Pages hosting. GitHub Pages cannot prov
 1. Create or sign in to a free Cloudflare account at https://dash.cloudflare.com/ .
 2. In **Web Analytics**, choose **Add a site**. For the GitHub Pages URL, use the hostname `interzone83.github.io` (not the full `/LewishamDogFoulingLog/v2/` URL).
 3. Choose manual JavaScript-snippet setup. From **Manage site**, copy the 32-character **site token** in the `data-cf-beacon` snippet. It is an intentionally public site identifier, **not** a Cloudflare API key.
-4. Open the V2 admin URL at `https://interzone83.github.io/LewishamDogFoulingLog/v2/?admin=1`, select **Website traffic**, and authenticate with your existing fine-grained GitHub repository token. Paste the **site token** in the Cloudflare field.
+4. Open the V2 admin URL at `https://interzone83.github.io/LewishamDogFoulingLog/v2/?admin=1`, select **Website traffic**, and authenticate with your existing fine-grained GitHub repository token. Paste either the complete **Cloudflare JS snippet** copied from Cloudflare, or just its **site token**, into the Cloudflare field; the editor extracts the site token automatically.
 5. Select **Save changes to GitHub**. Allow GitHub Pages to publish. Tracking starts only on subsequent loads of the public `/v2/` website. Visits to `?admin=1` are excluded.
 6. For unique visitor estimates, page views, daily history and URLs, open **Web Analytics** in your **private Cloudflare dashboard** and select the site. Data may take a few minutes to appear.
 
