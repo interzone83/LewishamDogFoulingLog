@@ -70,3 +70,18 @@ The page warns before leaving if there are unsaved data changes. Admin mode and 
 ## Image standard
 
 Images uploaded through the V2 browser editor are written as 1080 × 1440 JPEGs at approximately 50% JPEG quality to keep repository file sizes modest. Original source filenames are retained where supplied by the browser; collisions receive a unique suffix. Phone/Scriptable uploads remain in their permanent-ID folders and are attached by relative repository path.
+
+## Website traffic (Cloudflare Web Analytics)
+
+Cloudflare setup is separate from GitHub Pages hosting. GitHub Pages cannot provide access logs or count website visitors on its own.
+
+1. Create or sign in to a free Cloudflare account at https://dash.cloudflare.com/ .
+2. In **Web Analytics**, choose **Add a site**. For the GitHub Pages URL, use the hostname `interzone83.github.io` (not the full `/LewishamDogFoulingLog/v2/` URL).
+3. Choose manual JavaScript-snippet setup. From **Manage site**, copy the 32-character **site token** in the `data-cf-beacon` snippet. It is an intentionally public site identifier, **not** a Cloudflare API key.
+4. Open the V2 admin URL at `https://interzone83.github.io/LewishamDogFoulingLog/v2/?admin=1`, select **Website traffic**, and authenticate with your existing fine-grained GitHub repository token. Paste the **site token** in the Cloudflare field.
+5. Select **Save changes to GitHub**. Allow GitHub Pages to publish. Tracking starts only on subsequent loads of the public `/v2/` website. Visits to `?admin=1` are excluded.
+6. For unique visitor estimates, page views, daily history and URLs, open **Web Analytics** in your **private Cloudflare dashboard** and select the site. Data may take a few minutes to appear.
+
+The **Website traffic** admin section currently holds the configuration and links to the private dashboard; it does **not** embed Cloudflare's private figures. GitHub Pages cannot safely expose private Cloudflare API credentials from client-side code. Never paste a Cloudflare API key into site settings.
+
+For **GitHub repository traffic** (a different metric), visit `https://github.com/interzone83/LewishamDogFoulingLog/graphs/traffic` while signed into an account with repository push access, or use the repository **Insights → Traffic** navigation. GitHub's traffic graph shows repository views and unique visitors for the past 14 days, **not** visitors to the published GitHub Pages evidence log.
