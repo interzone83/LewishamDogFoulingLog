@@ -2,5 +2,6 @@
   "summary": "An ongoing photographic record of dog fouling and discarded bagged dog waste observed on local pedestrian routes leading to a primary school, train station and the local park.",
   "showIncidentCount": true,
   "showPhotoCount": false,
-  "showLocationCount": false
+  "showLocationCount": false,
+  "cloudflareSiteToken": "aefe2f6b253d41579228803347643cc3"
 }
