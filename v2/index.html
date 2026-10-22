@@ -20,6 +20,8 @@ main{padding:18px}.modebar,.savebar,.tools{display:flex;gap:9px;flex-wrap:wrap;m
 .pendingwrap{display:none;margin:0 0 16px}.edit-mode .pendingwrap{display:block}.pending{padding:13px;border-color:#d6b75f;background:#fffdf5;margin-bottom:10px}.pending h3{margin:0 0 6px}.pending .photos{margin:10px -13px -13px}
 .savebar{display:none;align-items:center;position:sticky;bottom:0;z-index:8;background:var(--bg);padding:9px 0;border-top:1px solid var(--line)}.edit-mode .savebar,.review-mode .savebar{display:flex}.status{font-size:.9rem;color:var(--muted)}.status.saved{color:var(--g);font-weight:800}.status.error{color:var(--danger);font-weight:800}.card-save-status{align-self:center}.notice{padding:10px 12px;border-radius:9px;background:#fff6cf;color:#624c00;margin-bottom:12px}
 dialog{border:0;border-radius:14px;padding:0;max-width:min(92vw,760px);width:100%}dialog::backdrop{background:#0009}.dialogbody{padding:18px}.dialogbody h3{margin-top:0}.dialogactions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.browserbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.browserpath{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem;color:var(--muted);word-break:break-all}.repoimages{max-height:58vh;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px}.repoimg,.repofolder{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}.repoimg img{width:100%;height:110px;object-fit:cover}.repoimg button,.repofolder button{width:100%;border:0;border-top:1px solid var(--line);padding:7px;background:#fff;cursor:pointer;overflow:hidden;text-overflow:ellipsis}.repofolder button{border-top:0;min-height:88px;font-weight:700}.foldericon{display:block;font-size:2rem;margin-bottom:5px}
+.traffic-mode #stats,.traffic-mode .tools,.traffic-mode #log,.traffic-mode #empty,.traffic-mode #pendingWrap{display:none!important}.traffic-mode .savebar{display:flex}
+.traffic-panel input{width:100%;max-width:530px;padding:9px;border:1px solid #bcc8c1;border-radius:8px}.traffic-panel .traffic-link{display:inline-block;margin:8px 0}.traffic-panel .notice{margin-top:12px}
 #viewer{position:fixed;inset:0;margin:auto;max-width:100vw;max-height:100vh;width:100vw;height:100vh;padding:12px;border-radius:0;background:#111d18ed;color:white;overflow:hidden}#viewer[open]{display:flex;align-items:center;justify-content:center}#viewer img{max-width:calc(100vw - 95px);max-height:calc(100vh - 105px);object-fit:contain}#viewer button{position:absolute;width:43px;height:43px;border:0;border-radius:50%;background:#ffffffe6;font-size:25px;cursor:pointer}#viewer .closeviewer{top:15px;right:15px}#viewer .prevviewer{top:50%;left:12px}#viewer .nextviewer{top:50%;right:12px}#viewer button:disabled{display:none}#viewer .viewercounter{position:absolute;bottom:16px;left:0;right:0;text-align:center}
 footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty{padding:24px;text-align:center;color:var(--muted)}
 @media(max-width:650px){.stats,.tools,.editgrid,.reviewgrid{grid-template-columns:1fr}.wide{grid-column:auto}.head{flex-direction:column}.photos img{height:220px}.card-save{width:100%}.savebar{padding:8px 0}}
@@ -32,6 +34,7 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
   <button class="btn active" data-mode="public">Public view</button>
   <button class="btn" data-mode="review">Incident review</button>
   <button class="btn" data-mode="edit">Edit log</button>
+  <button class="btn" data-mode="traffic">Website traffic</button>
   <a class="btn" href="../">Open original V1</a>
 </div>
 <div id="authNotice" class="notice" hidden>Review and editing writes directly to the GitHub repository. Your GitHub token is kept only for this browser tab/session and is never saved into the site.</div>
@@ -40,6 +43,16 @@ footer{text-align:center;color:var(--muted);font-size:.82rem;padding:25px}.empty
   <button id="exportCsv" class="btn">Export CSV</button>
   <span id="saveStatus" class="status">GitHub connected · no unsaved changes</span>
 </div>
+<section id="trafficPanel" class="settings-panel traffic-panel" hidden>
+  <h2>Website traffic</h2>
+  <p id="trafficStatus" role="status">Loading tracking settings…</p>
+  <p>Track visits to the public evidence log with Cloudflare Web Analytics. Admin visits are excluded. Cloudflare provides approximate unique visitor and page-view figures without giving you a list of IP addresses.</p>
+  <label class="settinglabel" for="cloudflareSiteToken">Cloudflare Web Analytics site token (not an API token)</label>
+  <input id="cloudflareSiteToken" type="text" spellcheck="false" autocomplete="off" placeholder="32-character site token">
+  <p>Register <b>interzone83.github.io</b> in Cloudflare Web Analytics, then paste the <b>site token</b> from its JavaScript snippet above. Save changes to GitHub to enable counting. You may also clear the token and save to disable it. Never enter a Cloudflare API token, password or secret here: this site token is intentionally public.</p>
+  <a class="btn traffic-link" href="https://dash.cloudflare.com/?to=/:account/web-analytics" target="_blank" rel="noopener noreferrer">View private stats in Cloudflare ↗</a>
+  <div class="notice">The visitor totals live in your private Cloudflare account, not in GitHub. Embedding those totals directly here requires a separate authenticated server-side connection; GitHub Pages cannot securely retrieve them on its own. No private analytics API credentials are stored on this website.</div>
+</section>
 <section class="stats" id="stats">
   <div class="stat" id="statIncidents"><b id="incidentCount">0</b><span>logged incidents</span></div>
   <div class="stat" id="statPhotos"><b id="photoCount">0</b><span>evidence photographs</span></div>
@@ -80,14 +93,14 @@ const REPO='interzone83/LewishamDogFoulingLog';
 const DATA_PATH='v2/incidents.js';
 const PAGE_PARAMS=new URLSearchParams(location.search);
 const ADMIN=PAGE_PARAMS.get('admin')==='1';
-const VALID_MODES=['public','review','edit'];
+const VALID_MODES=['public','review','edit','traffic'];
 const STORED_MODE=sessionStorage.getItem('doglogViewMode');
 const INITIAL_MODE=ADMIN&&(VALID_MODES.includes(PAGE_PARAMS.get('view'))?PAGE_PARAMS.get('view'):(VALID_MODES.includes(STORED_MODE)?STORED_MODE:'public'));
 const TYPES=['Unbagged fouling','Spread / smeared fouling','Residue after attempted clean-up','Bagged dog waste'];
 const MAIN_LOCATIONS=['Dunfield Road','Brookehowse Road','Sedge Hill Road','Beckenham Hill Road','Beckenham Hill station approaches','Beckenham Place Park','Southend Lane',"St Augustine's School area"];
 const DEFAULT_PUBLIC_SETTINGS={
   summary:'An ongoing photographic record of dog fouling and discarded bagged dog waste observed on local pedestrian routes. Follow-up checks document whether individual incidents remain, have been cleared, or have changed.',
-  showIncidentCount:true,showPhotoCount:false,showLocationCount:false
+  showIncidentCount:true,showPhotoCount:false,showLocationCount:false,cloudflareSiteToken:''
 };
 let publicSettings={...DEFAULT_PUBLIC_SETTINGS};
 let incidentsDirty=false,settingsDirty=false;
@@ -97,6 +110,25 @@ async function loadPublicSettings(){
   }catch(e){console.warn('Public display settings unavailable',e)}
 }
 
+function enableCloudflareTracking(){
+  if(ADMIN)return; // Never track admin or editing sessions.
+  const siteToken=String(publicSettings.cloudflareSiteToken||'').trim();
+  if(!/^[a-f\d]{32}$/i.test(siteToken))return;
+  const beacon=document.createElement('script');
+  beacon.type='module';
+  beacon.src='https://static.cloudflareinsights.com/beacon.min.js';
+  beacon.setAttribute('data-cf-beacon',JSON.stringify({token:siteToken}));
+  document.body.appendChild(beacon);
+}
+function refreshTrafficStatus(){
+  const el=document.getElementById('trafficStatus');
+  if(!el)return;
+  const enabled=/^[a-f\d]{32}$/i.test(String(publicSettings.cloudflareSiteToken||''));
+  el.textContent=enabled?
+    '✓ Tracking configured for the public /v2/ page. Open Cloudflare for live visitor totals.':
+    'Tracking is not yet enabled. Set up a free Cloudflare Web Analytics site and enter its site token below.';
+  el.className=enabled?'status saved':'status';
+}
 let data=[];
 function normaliseData(raw){
   return (raw||[]).map((x,i)=>({
@@ -350,11 +382,14 @@ function render(preserveScroll=true){
   const y=preserveScroll?window.scrollY:null;
   document.body.classList.toggle('review-mode',mode==='review');
   document.body.classList.toggle('edit-mode',mode==='edit');
+  document.body.classList.toggle('traffic-mode',mode==='traffic');
   $$('.modebar [data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
   $('#authNotice').hidden=mode==='public';
   $('#dateOrder').value=dateOrder;
   $('#publicIntro').textContent=publicSettings.summary||'';
   $('#publicControls').hidden=mode!=='edit';
+  $('#trafficPanel').hidden=mode!=='traffic';
+  if(mode==='traffic'){$('#cloudflareSiteToken').value=publicSettings.cloudflareSiteToken||'';refreshTrafficStatus()}
   $('#publicSummaryEditor').value=publicSettings.summary||'';
   $('#showIncidentCount').checked=!!publicSettings.showIncidentCount;
   $('#showPhotoCount').checked=!!publicSettings.showPhotoCount;
@@ -478,7 +513,7 @@ async function gh(path,opts={}){
 }
 async function verifyToken(){
   if(!token)return false;
-  try{await gh('');return true}catch(e){token='';sessionStorage.removeItem('doglogGhToken');return false}
+  try{const repoInfo=await gh('');if(!repoInfo?.permissions?.push)throw new Error('GitHub write access required');return true}catch(e){token='';sessionStorage.removeItem('doglogGhToken');return false}
 }
 async function requestMode(wanted){
   if(!VALID_MODES.includes(wanted))wanted='public';
@@ -747,6 +782,19 @@ async function saveAll(focusUid=null){
     saving=false;
   }
 }
+$('#cloudflareSiteToken').addEventListener('change',e=>{
+  const value=e.target.value.trim();
+  if(value&&!/^[a-f\d]{32}$/i.test(value)){
+    $('#trafficStatus').textContent='Invalid site token. Enter the 32-character Cloudflare beacon token, not an API token.';
+    $('#trafficStatus').className='status error';
+    return;
+  }
+  if(value===String(publicSettings.cloudflareSiteToken||''))return;
+  publicSettings.cloudflareSiteToken=value;
+  settingsDirty=true;
+  markDirty('Cloudflare tracking settings changed · save to publish',false);
+  refreshTrafficStatus();
+});
 $('#saveAll').onclick=saveAll;
 $$('.modebar [data-mode]').forEach(b=>b.onclick=()=>requestMode(b.dataset.mode));
 $('#search').oninput=render;
@@ -806,6 +854,7 @@ Promise.all([loadInitialData(),loadLocations(),loadPublicSettings()]).then(async
   takeBaselines();
   offerDraftRecovery();
   render(false);
+  enableCloudflareTracking();
   if(ADMIN&&INITIAL_MODE!=='public')await requestMode(INITIAL_MODE);
   else{mode='public';persistMode();restoreScrollPosition(mode)}
   scrollToLinkedIncident();
